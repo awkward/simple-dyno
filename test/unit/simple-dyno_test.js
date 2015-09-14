@@ -1,60 +1,97 @@
-import { assert } from 'chai';
+import { expect } from 'chai';
 import sinon from 'sinon';
 import debug from '../../lib/debug';
 import SimpleDyno from '../../lib/simple-dyno';
+import * as db from '../../lib/db';
+import Joi from 'joi';
 
-// debug.enabled = true;
+describe('SimpleDyno', function() {
 
-suite('SimpleDyno', function() {
-  suite('#constructor()', function() {
-
-    test('should throw an error when #setConfig was not called', function() {
-      assert.throw(function() { new SimpleDyno() });
+  describe('#constructor()', function() {
+    it('should throw an error when #setConfig was not called', function() {
+      expect(function() { new SimpleDyno() }).to.throw();
     });
 
-    test('should throw an error when there is no schema given', function() {
+    it('should throw an error when there is no schema given', function() {
       SimpleDyno.setConfig({"accessKeyId": "AWS_ACCESS_KEY", "secretAccessKey": "AWS_SECRET", "region": "AWS_REGION"});
-      assert.throw(function() { new SimpleDyno({hashKey: "", table: ""}) });
+      expect(function() { new SimpleDyno({hashKey: "", table: ""}) }).to.throw();
     });
 
-    test('should throw an error when there is no hashKey given', function() {
+    it('should throw an error when there is no hashKey given', function() {
       SimpleDyno.setConfig({"accessKeyId": "AWS_ACCESS_KEY", "secretAccessKey": "AWS_SECRET", "region": "AWS_REGION"});
-      assert.throw(function() { new SimpleDyno({schema: {}, table: ""}) });
+      expect(function() { new SimpleDyno({schema: {}, table: ""}) }).to.throw();
     });
 
-    test('should throw an error when there is no table given', function() {
+    it('should throw an error when there is no table given', function() {
       SimpleDyno.setConfig({"accessKeyId": "AWS_ACCESS_KEY", "secretAccessKey": "AWS_SECRET", "region": "AWS_REGION"});
-      assert.throw(function() { new SimpleDyno({schema: {}, hashKey: ""}) });
+      expect(function() { new SimpleDyno({schema: {}, hashKey: ""}) }).to.throw();
     });
 
-    test('should call setTable', function() {
+    it('should call setTable', function() {
       SimpleDyno.setConfig({"accessKeyId": "AWS_ACCESS_KEY", "secretAccessKey": "AWS_SECRET", "region": "AWS_REGION"});
-      SimpleDyno.setTable = sinon.spy();
+      let spy = sinon.spy(db, "setTable");
       new SimpleDyno({table: "", schema: {}, hashKey: ""});
+      expect(spy.called).to.be.true;
     });
   });
 
-  suite('#create()', function() {
-    test('should do something', function() {
+  describe('Instance methods:', function () {
+    SimpleDyno.setConfig({"accessKeyId": "AWS_ACCESS_KEY", "secretAccessKey": "AWS_SECRET", "region": "AWS_REGION"});
 
+    let model;
+
+    beforeEach(function() {
+      model = new SimpleDyno({
+        table: "users",
+        hashKey: "email",
+        serializers: {
+          default: ['email'],
+          scary: ['access_token', 'password']
+        },
+        schema: {
+          email: Joi.string().email(),
+          access_token: Joi.string(),
+          password: {
+            format: Joi.string().regex(/[a-zA-Z0-9]{3,30}/),
+            encrypt: true
+          }
+        }
+      });
+    });
+
+    describe('#defineSchema()', function() {
+      it('should set an encryptFields array', function() {
+        expect(model.encryptFields.length).to.equal(1);
+      });
+
+      it('should set the schema for the model', function() {
+        expect(model.schema).to.be.an('object');
+      });
+    });
+
+    describe('#create()', function() {
+      it('should do something', function() {
+
+      });
+    });
+
+    describe('#get()', function() {
+      it('should do something', function() {
+
+      });
+    });
+
+    describe('#update()', function() {
+      it('should do something', function() {
+
+      });
+    });
+
+    describe('#find()', function() {
+      it('should do something', function() {
+
+      });
     });
   });
 
-  suite('#get()', function() {
-    test('should do something', function() {
-
-    });
-  });
-
-  suite('#update()', function() {
-    test('should do something', function() {
-
-    });
-  });
-
-  suite('#find()', function() {
-    test('should do something', function() {
-
-    });
-  });
 });
