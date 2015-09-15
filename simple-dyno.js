@@ -4,6 +4,7 @@
 Object.defineProperty(exports, '__esModule', {
   value: true
 });
+exports.setAWSClient = setAWSClient;
 exports.setTable = setTable;
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
@@ -23,25 +24,36 @@ var DOC = _interopRequireWildcard(_dynamodbDoc);
 // http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html
 // https://github.com/awslabs/dynamodb-document-js-sdk
 
-// var databaseConfig = {
-//   "accessKeyId": config.AWS_ACCESS_KEY,
-//   "secretAccessKey": config.AWS_SECRET,
-//   "region": config.AWS_REGION
-// };
+var debug = require('./debug')('simpledyno:db');
 
-// if(config.DEBUG) {
-//   localDynamo.launch({port: 4567});
-//   databaseConfig.endpoint = new AWS.Endpoint('http://localhost:4567');
-// }
-
-var client = new AWS.DynamoDB(databaseConfig);
+var client = undefined;
 exports.client = client;
-var doc = new DOC.DynamoDB(client);
+var doc = undefined;
 
 exports.doc = doc;
 
+function setAWSClient(options) {
+
+  // options = {
+  //   "accessKeyId": AWS_ACCESS_KEY,
+  //   "secretAccessKey": AWS_SECRET,
+  //   "region": AWS_REGION
+  // };
+
+  if (debug.enabled) {
+    localDynamo.launch({ port: 4567 });
+    databaseConfig.endpoint = new AWS.Endpoint('http://localhost:4567');
+  }
+
+  exports.client = client = new AWS.DynamoDB(options);
+  exports.doc = doc = new DOC.DynamoDB(client);
+}
+
 function setTable(name, hashKey, rangeKey) {
   return new Promise(function (resolve, reject) {
+    if (typeof client === "undefined" || typeof doc === "undefined") {
+      return reject(new Error("Not connected to AWS, please use setupDB with the right credentials"));
+    }
     // Check if the table already exists
     // client.deleteTable({TableName: name}, function() {
     client.listTables({}, function (error, data) {
@@ -82,7 +94,7 @@ function setTable(name, hashKey, rangeKey) {
     // });
   });
 }
-},{"aws-sdk":5,"dynamodb-doc":241,"local-dynamo":268}],2:[function(require,module,exports){
+},{"./debug":2,"aws-sdk":5,"dynamodb-doc":241,"local-dynamo":268}],2:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -152,15 +164,28 @@ var _bcrypt = require('bcrypt');
 
 var _bcrypt2 = _interopRequireDefault(_bcrypt);
 
+var debug = require('./debug')('simpledyno:class');
+
 var SimpleDyno = (function () {
-  function SimpleDyno(options) {
+  function SimpleDyno() {
+    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
     _classCallCheck(this, SimpleDyno);
 
-    this.schema = this.defineSchema(options.schema);
+    if (typeof db.client === "undefined" || typeof db.doc === "undefined") throw new Error("Not connected to AWS, please use SimpleDyno.setConfig before creating an instance");
+    if (typeof options.hashKey === "undefined") throw new Error("Please provide a hashKey field for the model");
+    if (typeof options.table === "undefined") throw new Error("Please provide a table name that you want to create/use");
+    if (typeof options.schema === "undefined") throw new Error("Please provide a schema for the model using Joi");
+
+    this.encryptFields = [];
     this.serializers = options.serializers;
     this.hashKey = options.hashKey;
     this.rangeKey = options.rangeKey;
     this.table = options.table;
+
+    this.schema = this.defineSchema(options.schema);
+
+    debug('Created SimpleDyno for ' + this.table);
     db.setTable(this.table, this.hashKey, this.rangeKey);
   }
 
@@ -178,7 +203,7 @@ var SimpleDyno = (function () {
 
       var newObject = {};
       for (var key in object) {
-        if (serializer.includes(key)) {
+        if (typeof serializer === "undefined" || serializer.includes(key)) {
           newObject[key] = object[key];
         }
       }
@@ -188,7 +213,41 @@ var SimpleDyno = (function () {
   }, {
     key: 'defineSchema',
     value: function defineSchema(schema) {
-      return _joi2['default'].object().keys(schema);
+      var joiSchema = {};
+
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = Object.keys(schema)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var key = _step.value;
+
+          var item = schema[key];
+          if (item.isJoi) {
+            joiSchema[key] = item;
+          } else {
+
+            if (item.format && item.format.isJoi) joiSchema[key] = item.format;
+            if (item.encrypt) this.encryptFields.push(key);
+          }
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator['return']) {
+            _iterator['return']();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      return _joi2['default'].object().keys(joiSchema);
     }
   }, {
     key: 'checkEncryptedField',
@@ -220,30 +279,30 @@ var SimpleDyno = (function () {
       }
 
       // encrypt fields that need to be encrypted
-      if (options.encryptFields) {
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
+      if (this.encryptFields) {
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
 
         try {
-          for (var _iterator = options.encryptFields[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var i = _step.value;
+          for (var _iterator2 = this.encryptFields[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var i = _step2.value;
 
             var salt = _bcrypt2['default'].genSaltSync(10);
             var hash = _bcrypt2['default'].hashSync(item[i], salt);
             item[i] = hash;
           }
         } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion && _iterator['return']) {
-              _iterator['return']();
+            if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+              _iterator2['return']();
             }
           } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
+            if (_didIteratorError2) {
+              throw _iteratorError2;
             }
           }
         }
@@ -365,13 +424,19 @@ var SimpleDyno = (function () {
         return result.value;
       }
     }
+  }], [{
+    key: 'setConfig',
+    value: function setConfig(config) {
+      return db.setAWSClient(config);
+    }
   }]);
 
   return SimpleDyno;
 })();
 
-exports.SimpleDyno = SimpleDyno;
-},{"./db":1,"bcrypt":61,"joi":252}],5:[function(require,module,exports){
+exports['default'] = SimpleDyno;
+module.exports = exports['default'];
+},{"./db":1,"./debug":2,"bcrypt":61,"joi":252}],5:[function(require,module,exports){
 // AWS SDK for JavaScript v2.1.50
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // License at https://sdk.amazonaws.com/js/BUNDLE_LICENSE.txt
@@ -40968,12 +41033,12 @@ module.exports={
     "joi": "^6.5.0"
   },
   "devDependencies": {
-    "local-dynamo": "^0.1.1",
-    "babel": "^5.8.19",
     "async": "^1.4.2",
+    "babel": "^5.8.19",
     "browserify": "^11.0.1",
     "chai": "^3.0.0",
     "glob": "^5.0.14",
+    "local-dynamo": "^0.1.1",
     "mocha": "^2.2.5",
     "nock": "^2.7.0",
     "sinon": "^1.15.4",
