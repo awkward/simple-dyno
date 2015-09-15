@@ -14,8 +14,7 @@ simple-dyno.min.js simple-dyno.js.map: simple-dyno.js node_modules
 
 simple-dyno.js: build node_modules
 	rm -rf simple-dyno.js /tmp/simple-dyno.js
-	./node_modules/.bin/browserify --standalone simple-dyno ./build/index.js > /tmp/simple-dyno.js
-	cat /tmp/simple-dyno.js > simple-dyno.js
+	./node_modules/.bin/browserify --standalone simple-dyno ./build/index.js > simple-dyno.js
 
 build: $(JS) node_modules
 	rm -rf build/
