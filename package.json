@@ -2,7 +2,7 @@
   "name": "simple-dyno",
   "version": "0.0.1",
   "description": "Wrapper around AWS DynamoDB SDK to make things easier",
-  "main": "index.js",
+  "main": "simple-dyno.js",
   "directories": {
     "test": "test"
   },
