@@ -5,16 +5,8 @@ JS := $(shell find lib/ -name "*.js")
 install:
 	@npm install $(REGISTRY)
 
-simple-dyno.min.js simple-dyno.js.map: simple-dyno.js node_modules
-	./node_modules/.bin/uglifyjs simple-dyno.js \
-		--lint \
-		--screw-ie8 \
-		--output ./simple-dyno.min.js \
-		--source-map ./simple-dyno.js.map
-
-simple-dyno.js: build node_modules
-	rm -rf simple-dyno.js /tmp/simple-dyno.js
-	./node_modules/.bin/browserify --standalone simple-dyno ./build/index.js > simple-dyno.js
+simple-dyno.js:
+	cat build/*.js > simple-dyno.js
 
 build: $(JS) node_modules
 	rm -rf build/
