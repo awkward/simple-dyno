@@ -1,36 +1,36 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import debug from '../../lib/debug';
-import SimpleDyno from '../../lib/simple-dyno';
+import * as SimpleDyno from '../../lib/index';
 import * as db from '../../lib/db';
 import Joi from 'joi';
 
-describe('SimpleDyno', function() {
+describe('SimpleDyno.Model', function() {
 
   describe('#constructor()', function() {
     it('should throw an error when #setConfig was not called', function() {
-      expect(function() { new SimpleDyno() }).to.throw();
+      expect(function() { new SimpleDyno.Model() }).to.throw();
     });
 
     it('should throw an error when there is no schema given', function() {
       SimpleDyno.setConfig({"accessKeyId": "AWS_ACCESS_KEY", "secretAccessKey": "AWS_SECRET", "region": "AWS_REGION"});
-      expect(function() { new SimpleDyno({hashKey: "", table: ""}) }).to.throw();
+      expect(function() { new SimpleDyno.Model({hashKey: "", table: ""}) }).to.throw();
     });
 
     it('should throw an error when there is no hashKey given', function() {
       SimpleDyno.setConfig({"accessKeyId": "AWS_ACCESS_KEY", "secretAccessKey": "AWS_SECRET", "region": "AWS_REGION"});
-      expect(function() { new SimpleDyno({schema: {}, table: ""}) }).to.throw();
+      expect(function() { new SimpleDyno.Model({schema: {}, table: ""}) }).to.throw();
     });
 
     it('should throw an error when there is no table given', function() {
       SimpleDyno.setConfig({"accessKeyId": "AWS_ACCESS_KEY", "secretAccessKey": "AWS_SECRET", "region": "AWS_REGION"});
-      expect(function() { new SimpleDyno({schema: {}, hashKey: ""}) }).to.throw();
+      expect(function() { new SimpleDyno.Model({schema: {}, hashKey: ""}) }).to.throw();
     });
 
     it('should call setTable', function() {
       SimpleDyno.setConfig({"accessKeyId": "AWS_ACCESS_KEY", "secretAccessKey": "AWS_SECRET", "region": "AWS_REGION"});
       let spy = sinon.spy(db, "setTable");
-      new SimpleDyno({table: "", schema: {}, hashKey: ""});
+      new SimpleDyno.Model({table: "", schema: {}, hashKey: ""});
       expect(spy.called).to.be.true;
     });
   });
@@ -41,7 +41,7 @@ describe('SimpleDyno', function() {
     let model;
 
     beforeEach(function() {
-      model = new SimpleDyno({
+      model = new SimpleDyno.Model({
         table: "users",
         hashKey: "email",
         serializers: {
