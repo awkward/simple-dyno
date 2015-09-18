@@ -5,8 +5,8 @@ JS := $(shell find lib/ -name "*.js")
 install:
 	@npm install $(REGISTRY)
 
-simple-dyno.js:
-	cat build/*.js > simple-dyno.js
+simple-dyno.js: build
+	./node_modules/.bin/browserify --no-bundle-external --standalone simple-dyno ./build/index.js > ./simple-dyno.js
 
 build: $(JS) node_modules
 	rm -rf build/

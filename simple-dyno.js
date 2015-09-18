@@ -1,3 +1,4 @@
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.simpleDyno = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -99,7 +100,9 @@ function setTable(name, hashKey, rangeKey) {
     });
     // });
   });
-}"use strict";
+}
+},{"./debug":2,"aws-sdk":undefined,"dynamodb-doc":undefined,"local-dynamo":undefined}],2:[function(require,module,exports){
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -136,7 +139,9 @@ var Debug = (function () {
 exports.Debug = Debug;
 
 var debug = new Debug();
-exports["default"] = debug;'use strict';
+exports["default"] = debug;
+},{}],3:[function(require,module,exports){
+'use strict';
 
 Object.defineProperty(exports, '__esModule', {
   value: true
@@ -169,7 +174,9 @@ Object.defineProperty(exports, 'Model', {
   get: function get() {
     return _model.Model;
   }
-});'use strict';
+});
+},{"../package":5,"./db":1,"./debug":2,"./model":4}],4:[function(require,module,exports){
+'use strict';
 
 Object.defineProperty(exports, '__esModule', {
   value: true
@@ -467,3 +474,37 @@ var Model = (function () {
 })();
 
 exports.Model = Model;
+},{"./db":1,"./debug":2,"bcrypt":undefined,"joi":undefined}],5:[function(require,module,exports){
+module.exports={
+  "name": "simple-dyno",
+  "version": "0.0.1",
+  "description": "Wrapper around AWS DynamoDB SDK to make things easier",
+  "main": "simple-dyno.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "author": "David van Leeuwen",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.1.39",
+    "bcrypt": "^0.8.4",
+    "dynamodb-doc": "^1.0.0",
+    "joi": "^6.5.0",
+    "local-dynamo": "^0.1.1",
+    "babel": "^5.8.19"
+  },
+  "devDependencies": {
+    "browserify": "^11.1.0",
+    "chai": "^3.0.0",
+    "mocha": "^2.2.5",
+    "nock": "^2.7.0",
+    "sinon": "^1.15.4",
+    "webpack": "^1.12.2"
+  }
+}
+
+},{}]},{},[3])(3)
+});
