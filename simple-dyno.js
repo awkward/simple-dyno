@@ -57,11 +57,12 @@ function setConfig() {
   exports.doc = doc = new DOC.DynamoDB(client);
 }
 
+if (!_debug2['default'].local) {
+  setConfig();
+}
+
 function setTable(name, hashKey, rangeKey) {
   return new Promise(function (resolve, reject) {
-    if (typeof client === "undefined" || typeof doc === "undefined") {
-      return reject(new Error("Not connected to AWS, please use setupDB with the right credentials"));
-    }
     // Check if the table already exists
     // client.deleteTable({TableName: name}, function() {
     client.listTables({}, function (error, data) {
@@ -215,7 +216,7 @@ var Model = (function () {
 
     _classCallCheck(this, Model);
 
-    if (typeof db.client === "undefined" || typeof db.doc === "undefined") throw new Error("Not connected to AWS, please use SimpleDyno.setConfig before creating an instance");
+    if (db.local && (typeof db.client === "undefined" || typeof db.doc === "undefined")) throw new Error("Not connected to AWS, please use SimpleDyno.setConfig before creating an instance");
     if (typeof options.hashKey === "undefined") throw new Error("Please provide a hashKey field for the model");
     if (typeof options.table === "undefined") throw new Error("Please provide a table name that you want to create/use");
     if (typeof options.schema === "undefined") throw new Error("Please provide a schema for the model using Joi");
