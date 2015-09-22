@@ -13,11 +13,11 @@
   "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.1.39",
-    "bcrypt": "^0.8.4",
+    "babel": "^5.8.19",
+    "bcryptjs": "^2.2.2",
     "dynamodb-doc": "^1.0.0",
     "joi": "^6.5.0",
-    "local-dynamo": "^0.1.1",
-    "babel": "^5.8.19"
+    "local-dynamo": "^0.1.1"
   },
   "devDependencies": {
     "browserify": "^11.1.0",
