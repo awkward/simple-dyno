@@ -38,7 +38,8 @@ var doc = undefined;
 
 exports.doc = doc;
 
-function setConfig(options) {
+function setConfig() {
+  var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
   // options = {
   //   "accessKeyId": AWS_ACCESS_KEY,
