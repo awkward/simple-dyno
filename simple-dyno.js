@@ -200,9 +200,9 @@ var _db = require('./db');
 
 var db = _interopRequireWildcard(_db);
 
-var _bcryptjs = require('bcryptjs');
+var _bcrypt = require('bcrypt');
 
-var _bcryptjs2 = _interopRequireDefault(_bcryptjs);
+var _bcrypt2 = _interopRequireDefault(_bcrypt);
 
 var _debug = require('./debug');
 
@@ -298,7 +298,7 @@ var Model = (function () {
   }, {
     key: 'checkEncryptedField',
     value: function checkEncryptedField(value, hash) {
-      return _bcryptjs2['default'].compareSync(value, hash);
+      return _bcrypt2['default'].compareSync(value, hash);
     }
   }, {
     key: 'create',
@@ -334,8 +334,8 @@ var Model = (function () {
           for (var _iterator2 = this.encryptFields[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
             var i = _step2.value;
 
-            var salt = _bcryptjs2['default'].genSaltSync(10);
-            var hash = _bcryptjs2['default'].hashSync(item[i], salt);
+            var salt = _bcrypt2['default'].genSaltSync(10);
+            var hash = _bcrypt2['default'].hashSync(item[i], salt);
             item[i] = hash;
           }
         } catch (err) {
@@ -387,8 +387,8 @@ var Model = (function () {
             var i = _step3.value;
 
             if (attributes[i]) {
-              var salt = _bcryptjs2['default'].genSaltSync(10);
-              var hash = _bcryptjs2['default'].hashSync(attributes[i], salt);
+              var salt = _bcrypt2['default'].genSaltSync(10);
+              var hash = _bcrypt2['default'].hashSync(attributes[i], salt);
               attributes[i] = hash;
             }
           }
@@ -507,7 +507,7 @@ var Model = (function () {
 })();
 
 exports.Model = Model;
-},{"./db":1,"./debug":2,"bcryptjs":undefined,"joi":undefined}],5:[function(require,module,exports){
+},{"./db":1,"./debug":2,"bcrypt":undefined,"joi":undefined}],5:[function(require,module,exports){
 module.exports={
   "name": "simple-dyno",
   "version": "0.0.1",
