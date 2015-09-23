@@ -377,6 +377,37 @@ var Model = (function () {
       var key = {};
       key[this.hashKey] = keyValue;
 
+      if (this.encryptFields) {
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
+
+        try {
+          for (var _iterator3 = this.encryptFields[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var i = _step3.value;
+
+            if (attributes[i]) {
+              var salt = _bcryptjs2['default'].genSaltSync(10);
+              var hash = _bcryptjs2['default'].hashSync(attributes[i], salt);
+              attributes[i] = hash;
+            }
+          }
+        } catch (err) {
+          _didIteratorError3 = true;
+          _iteratorError3 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+              _iterator3['return']();
+            }
+          } finally {
+            if (_didIteratorError3) {
+              throw _iteratorError3;
+            }
+          }
+        }
+      }
+
       for (var _key in attributes) {
         attributes[_key] = {
           Action: "PUT",
@@ -493,7 +524,7 @@ module.exports={
   "dependencies": {
     "aws-sdk": "^2.1.39",
     "babel": "^5.8.19",
-    "bcryptjs": "^2.2.2",
+    "bcrypt": "^0.8.5",
     "dynamodb-doc": "^1.0.0",
     "joi": "^6.5.0",
     "local-dynamo": "^0.1.1"
