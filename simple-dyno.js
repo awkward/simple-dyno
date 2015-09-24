@@ -48,7 +48,7 @@ function setConfig() {
   // };
 
   if (_debug2['default'].local) {
-    localDynamo.launch({ port: 4567 });
+    localDynamo.launch(null, 4567);
     options.endpoint = new AWS.Endpoint('http://localhost:4567');
     logger("Started local DynamoDB on http://localhost:4567");
   }
