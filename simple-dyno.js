@@ -239,7 +239,7 @@ var Model = (function () {
     logger('Model created for table: ' + this.table);
 
     db.setTable(this.table, this.hashKey, this.rangeKey).all(function () {
-      if (options.onReady) options.onReady();
+      if (_debug2['default'].onReady) _debug2['default'].onReady();
     });
   }
 
