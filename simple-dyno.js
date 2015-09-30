@@ -238,8 +238,9 @@ var Model = (function () {
 
     logger('Model created for table: ' + this.table);
 
-    // TODO: fire a `ready` event whenever this promise resolves, to know when this instance can be used
-    db.setTable(this.table, this.hashKey, this.rangeKey);
+    db.setTable(this.table, this.hashKey, this.rangeKey).all(function () {
+      if (options.onReady) options.onReady();
+    });
   }
 
   _createClass(Model, [{
