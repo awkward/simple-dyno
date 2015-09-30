@@ -50,8 +50,11 @@ function setConfig() {
   // };
 
   if (_debug2['default'].local) {
-    var stdout = (0, _child_process.execSync)("sudo killall java");
-    logger('killall java: ' + stdout.split('\n').join(''));
+    try {
+      var stdout = (0, _child_process.execSync)("sudo killall java");
+      logger('killall java: ' + stdout.split('\n').join(''));
+    } catch (e) {}
+
     localDynamo.launch(null, 4567);
     options.endpoint = new AWS.Endpoint('http://localhost:4567');
     logger("Started local DynamoDB on http://localhost:4567");
