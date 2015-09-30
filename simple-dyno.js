@@ -1,4 +1,5 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.simpleDyno = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function (__dirname){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -27,6 +28,8 @@ var _debug = require('./debug');
 
 var _debug2 = _interopRequireDefault(_debug);
 
+var _child_process = require('child_process');
+
 var logger = _debug2['default'].withTopic('simpledyno:db');
 
 // http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html
@@ -48,9 +51,11 @@ function setConfig() {
   // };
 
   if (_debug2['default'].local) {
-    localDynamo.launch(null, 4567);
-    options.endpoint = new AWS.Endpoint('http://localhost:4567');
-    logger("Started local DynamoDB on http://localhost:4567");
+    (0, _child_process.exec)("sudo killall java", { cwd: __dirname }, function (err, stdout, stderr) {
+      localDynamo.launch(null, 4567);
+      options.endpoint = new AWS.Endpoint('http://localhost:4567');
+      logger("Started local DynamoDB on http://localhost:4567");
+    });
   }
 
   exports.client = client = new AWS.DynamoDB(options);
@@ -103,7 +108,8 @@ function setTable(name, hashKey, rangeKey) {
     // });
   });
 }
-},{"./debug":2,"aws-sdk":undefined,"dynamodb-doc":undefined,"local-dynamo":undefined}],2:[function(require,module,exports){
+}).call(this,"/build")
+},{"./debug":2,"aws-sdk":undefined,"child_process":undefined,"dynamodb-doc":undefined,"local-dynamo":undefined}],2:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
