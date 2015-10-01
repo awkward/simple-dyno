@@ -239,6 +239,7 @@ var Model = (function () {
 
     db.setTable(this.table, this.hashKey, this.rangeKey).then(function () {
       if (_debug2['default'].onReady) _debug2['default'].onReady();
+      _debug2['default'].isReady = true;
     });
   }
 
