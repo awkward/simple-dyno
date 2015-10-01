@@ -226,7 +226,6 @@ var Model = (function () {
     if (db.local && (typeof db.client === "undefined" || typeof db.doc === "undefined")) throw new Error("Not connected to AWS, please use SimpleDyno.setConfig before creating an instance");
     if (typeof options.hashKey === "undefined") throw new Error("Please provide a hashKey field for the model");
     if (typeof options.table === "undefined") throw new Error("Please provide a table name that you want to create/use");
-    if (typeof options.schema === "undefined") throw new Error("Please provide a schema for the model using Joi");
 
     this.encryptFields = [];
     this.serializers = options.serializers;
@@ -234,7 +233,7 @@ var Model = (function () {
     this.rangeKey = options.rangeKey;
     this.table = options.table;
 
-    this.schema = this.defineSchema(options.schema);
+    if (options.schema) this.schema = this.defineSchema(options.schema);
 
     logger('Model created for table: ' + this.table);
 
@@ -281,7 +280,6 @@ var Model = (function () {
           if (item.isJoi) {
             joiSchema[key] = item;
           } else {
-
             if (item.format && item.format.isJoi) joiSchema[key] = item.format;
             if (item.encrypt) this.encryptFields.push(key);
           }
@@ -316,7 +314,7 @@ var Model = (function () {
       var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
       // validation
-      if (!options.skipValidation) {
+      if (!options.skipValidation || !this.schema) {
         var _ret = (function () {
           var result = _this.validate(item, _this.schema);
           if (result.error) {

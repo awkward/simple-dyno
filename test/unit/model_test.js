@@ -12,11 +12,6 @@ describe('SimpleDyno.Model', function() {
       expect(function() { new SimpleDyno.Model() }).to.throw();
     });
 
-    it('should throw an error when there is no schema given', function() {
-      SimpleDyno.setConfig({"accessKeyId": "AWS_ACCESS_KEY", "secretAccessKey": "AWS_SECRET", "region": "AWS_REGION"});
-      expect(function() { new SimpleDyno.Model({hashKey: "", table: ""}) }).to.throw();
-    });
-
     it('should throw an error when there is no hashKey given', function() {
       SimpleDyno.setConfig({"accessKeyId": "AWS_ACCESS_KEY", "secretAccessKey": "AWS_SECRET", "region": "AWS_REGION"});
       expect(function() { new SimpleDyno.Model({schema: {}, table: ""}) }).to.throw();
