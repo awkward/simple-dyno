@@ -311,7 +311,7 @@ var Model = (function () {
       var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
       // validation
-      if (!options.skipValidation || !this.schema) {
+      if (!options.skipValidation && this.schema) {
         var _ret = (function () {
           var result = _this.validate(item, _this.schema);
           if (result.error) {
