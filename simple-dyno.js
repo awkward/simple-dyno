@@ -42,13 +42,7 @@ var doc = undefined;
 exports.doc = doc;
 
 function setConfig() {
-  var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-
-  // options = {
-  //   "accessKeyId": AWS_ACCESS_KEY,
-  //   "secretAccessKey": AWS_SECRET,
-  //   "region": AWS_REGION
-  // };
+  var options = arguments.length <= 0 || arguments[0] === undefined ? { accessKeyId: "", secretAccessKey: "", region: "eu-west-1" } : arguments[0];
 
   if (_debug2['default'].local || process.env.NODE_ENV === 'test') {
     try {
