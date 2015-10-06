@@ -479,10 +479,11 @@ var Model = (function () {
     value: function get(key) {
       var params = {
         TableName: this.table,
-        Key: key
+        Key: {}
       };
 
-      // TODO: use serializers to e.g. FILTER OUT PASSWORD!!
+      params.Key[this.hashKey] = key;
+
       return new Promise(function (resolve, reject) {
         db.doc.getItem(params, function (err, response) {
           if (err) {
