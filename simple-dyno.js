@@ -462,7 +462,7 @@ var Model = (function () {
           } else {
             switch (response.Count) {
               case 0:
-                reject({ error: { message: name + ' could not be found' } });
+                reject(new Error({ message: name + ' could not be found' }));
                 break;
               case 1:
                 resolve(response.Items[0]);
