@@ -316,10 +316,9 @@ var Model = (function () {
           var result = _this.validate(item, _this.schema);
           if (result.error) {
             return {
-              v: function (callback) {
-                // TODO: needs custom error messaging!!
-                callback(null, { error: result.error });
-              }
+              v: new Promise(function (resolve, reject) {
+                reject({ error: result.error });
+              })
             };
           }
         })();
@@ -364,15 +363,15 @@ var Model = (function () {
         Item: item
       };
 
-      return function (callback) {
+      return new Promise(function (resolve, reject) {
         db.doc.putItem(params, function (err, response) {
           if (err) {
-            callback(null, { error: err });
+            reject({ error: err });
           } else {
-            callback(null, item);
+            resolve(item);
           }
         });
-      };
+      });
     }
   }, {
     key: 'update',
@@ -426,15 +425,15 @@ var Model = (function () {
         AttributeUpdates: attributes
       };
 
-      return function (callback) {
+      return new Promise(function (resolve, reject) {
         db.doc.updateItem(params, function (err, response) {
           if (err) {
-            callback(null, { error: err });
+            reject({ error: err });
           } else {
-            callback(null, response);
+            resolve(response);
           }
         });
-      };
+      });
     }
   }, {
     key: 'destroy',
@@ -456,24 +455,24 @@ var Model = (function () {
         Select: "ALL_ATTRIBUTES"
       };
 
-      return function (callback) {
+      return new Promise(function (resolve, reject) {
         db.doc.scan(params, function (err, response) {
           if (err) {
-            callback(null, { error: err });
+            reject({ error: err });
           } else {
             switch (response.Count) {
               case 0:
-                callback(null, { error: { message: name + ' could not be found' } });
+                reject({ error: { message: name + ' could not be found' } });
                 break;
               case 1:
-                callback(null, response.Items[0]);
+                resolve(response.Items[0]);
                 break;
               default:
-                callback(null, response.Items);
+                resolve(response.Items);
             }
           }
         });
-      };
+      });
     }
   }, {
     key: 'get',
@@ -484,15 +483,15 @@ var Model = (function () {
       };
 
       // TODO: use serializers to e.g. FILTER OUT PASSWORD!!
-      return function (callback) {
+      return new Promise(function (resolve, reject) {
         db.doc.getItem(params, function (err, response) {
           if (err) {
-            callback(null, { error: err });
+            reject({ error: err });
           } else {
-            callback(null, response.Item);
+            resolve(response.Item);
           }
         });
-      };
+      });
     }
   }, {
     key: 'validate',
