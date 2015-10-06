@@ -488,6 +488,8 @@ var Model = (function () {
         db.doc.getItem(params, function (err, response) {
           if (err) {
             reject(new Error(err));
+          } else if (Object.keys(response).length === 0) {
+            reject(new Error("No result."));
           } else {
             resolve(response.Item);
           }
