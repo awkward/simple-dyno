@@ -317,7 +317,7 @@ var Model = (function () {
           if (result.error) {
             return {
               v: new Promise(function (resolve, reject) {
-                reject({ error: result.error });
+                reject(new Error(result.error));
               })
             };
           }
@@ -366,7 +366,7 @@ var Model = (function () {
       return new Promise(function (resolve, reject) {
         db.doc.putItem(params, function (err, response) {
           if (err) {
-            reject({ error: err });
+            reject(new Error(err));
           } else {
             resolve(item);
           }
@@ -428,7 +428,7 @@ var Model = (function () {
       return new Promise(function (resolve, reject) {
         db.doc.updateItem(params, function (err, response) {
           if (err) {
-            reject({ error: err });
+            reject(new Error(err));
           } else {
             resolve(response);
           }
@@ -458,7 +458,7 @@ var Model = (function () {
       return new Promise(function (resolve, reject) {
         db.doc.scan(params, function (err, response) {
           if (err) {
-            reject({ error: err });
+            reject(new Error(err));
           } else {
             switch (response.Count) {
               case 0:
@@ -486,7 +486,7 @@ var Model = (function () {
       return new Promise(function (resolve, reject) {
         db.doc.getItem(params, function (err, response) {
           if (err) {
-            reject({ error: err });
+            reject(new Error(err));
           } else {
             resolve(response.Item);
           }
