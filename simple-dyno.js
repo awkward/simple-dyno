@@ -224,6 +224,7 @@ var Model = (function () {
     if (typeof options.hashKey === "undefined") throw new Error("Please provide a hashKey field for the model");
     if (typeof options.table === "undefined") throw new Error("Please provide a table name that you want to create/use");
 
+    this.db = db;
     this.encryptFields = [];
     this.serializers = options.serializers;
     this.hashKey = options.hashKey;
