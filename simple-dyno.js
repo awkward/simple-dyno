@@ -1,5 +1,4 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.simpleDyno = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-(function (process){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -105,8 +104,7 @@ function setTable(name, hashKey, rangeKey) {
     // });
   });
 }
-}).call(this,require("/Users/davidvanleeuwen/Projects/simple-dyno/node_modules/browserify/node_modules/process/browser.js"))
-},{"./debug":2,"/Users/davidvanleeuwen/Projects/simple-dyno/node_modules/browserify/node_modules/process/browser.js":5,"aws-sdk":undefined,"child_process":undefined,"dynamodb-doc":undefined,"local-dynamo":undefined}],2:[function(require,module,exports){
+},{"./debug":2,"aws-sdk":undefined,"child_process":undefined,"dynamodb-doc":undefined,"local-dynamo":undefined}],2:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -180,7 +178,7 @@ Object.defineProperty(exports, 'Model', {
     return _model.Model;
   }
 });
-},{"../package":6,"./db":1,"./debug":2,"./model":4}],4:[function(require,module,exports){
+},{"../package":5,"./db":1,"./debug":2,"./model":4}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -470,6 +468,43 @@ var Model = (function () {
       });
     }
   }, {
+    key: 'query',
+    value: function query(indexName, _query) {
+      var _this2 = this;
+
+      return new Promise(function (resolve, reject) {
+        if (indexName === null) reject(new Error('Must provide an indexName'));
+
+        // extract key/value pair from query
+        var key = Object.keys(_query)[0];
+        var value = _query[key];
+
+        // setup parameters to do query with
+        var params = {
+          TableName: _this2.table,
+          IndexName: indexName,
+          KeyConditionExpression: key + '=:v_' + key
+        };
+
+        // setup the value to query with
+        params['ExpressionAttributeValues'] = {};
+        params['ExpressionAttributeValues'][':v_' + key] = value;
+
+        // perform the query
+        db.doc.query(params, function (err, response) {
+          if (err) {
+            reject(new Error(err));
+          } else {
+            if (response.Count === 0) {
+              reject(new Error(name + ' could not be found'));
+            } else {
+              resolve(response.Items);
+            }
+          }
+        });
+      });
+    }
+  }, {
     key: 'get',
     value: function get(key) {
       var params = {
@@ -508,99 +543,6 @@ var Model = (function () {
 
 exports.Model = Model;
 },{"./db":1,"./debug":2,"bcrypt":undefined,"joi":undefined}],5:[function(require,module,exports){
-// shim for using process in browser
-
-var process = module.exports = {};
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = setTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    clearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        setTimeout(drainQueue, 0);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],6:[function(require,module,exports){
 module.exports={
   "name": "simple-dyno",
   "version": "0.0.1",
