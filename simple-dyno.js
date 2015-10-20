@@ -181,6 +181,7 @@ Object.defineProperty(exports, 'Model', {
   }
 });
 },{"../package":6,"./db":1,"./debug":2,"./model":4}],4:[function(require,module,exports){
+(function (process){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -474,6 +475,10 @@ var Model = (function () {
     value: function query(indexName, _query) {
       var _this2 = this;
 
+      if (_debug2['default'].local || process.env.NODE_ENV === 'test') {
+        return this.find(_query);
+      }
+
       return new Promise(function (resolve, reject) {
         if (indexName === null) reject(new Error('Must provide an indexName'));
 
@@ -544,7 +549,8 @@ var Model = (function () {
 })();
 
 exports.Model = Model;
-},{"./db":1,"./debug":2,"bcrypt":undefined,"joi":undefined}],5:[function(require,module,exports){
+}).call(this,require("/Users/davidvanleeuwen/Projects/simple-dyno/node_modules/browserify/node_modules/process/browser.js"))
+},{"./db":1,"./debug":2,"/Users/davidvanleeuwen/Projects/simple-dyno/node_modules/browserify/node_modules/process/browser.js":5,"bcrypt":undefined,"joi":undefined}],5:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
