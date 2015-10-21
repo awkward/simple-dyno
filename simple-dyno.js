@@ -1,5 +1,4 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.simpleDyno = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-(function (process){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -19,10 +18,6 @@ var localDynamo = _interopRequireWildcard(_localDynamo);
 var _awsSdk = require('aws-sdk');
 
 var AWS = _interopRequireWildcard(_awsSdk);
-
-var _dynamodbDoc = require('dynamodb-doc');
-
-var DOC = _interopRequireWildcard(_dynamodbDoc);
 
 var _debug = require('./debug');
 
@@ -56,7 +51,7 @@ function setConfig() {
   }
 
   exports.client = client = new AWS.DynamoDB(options);
-  exports.doc = doc = new DOC.DynamoDB(client);
+  exports.doc = doc = new AWS.DynamoDB.DocumentClient(options);
 }
 
 if (!_debug2['default'].local || process.env.NODE_ENV !== 'test') {
@@ -105,8 +100,7 @@ function setTable(name, hashKey, rangeKey) {
     // });
   });
 }
-}).call(this,require("/Users/davidvanleeuwen/Projects/simple-dyno/node_modules/browserify/node_modules/process/browser.js"))
-},{"./debug":2,"/Users/davidvanleeuwen/Projects/simple-dyno/node_modules/browserify/node_modules/process/browser.js":5,"aws-sdk":undefined,"child_process":undefined,"dynamodb-doc":undefined,"local-dynamo":undefined}],2:[function(require,module,exports){
+},{"./debug":2,"aws-sdk":undefined,"child_process":undefined,"local-dynamo":undefined}],2:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -180,8 +174,7 @@ Object.defineProperty(exports, 'Model', {
     return _model.Model;
   }
 });
-},{"../package":6,"./db":1,"./debug":2,"./model":4}],4:[function(require,module,exports){
-(function (process){
+},{"../package":5,"./db":1,"./debug":2,"./model":4}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -366,7 +359,7 @@ var Model = (function () {
       };
 
       return new Promise(function (resolve, reject) {
-        db.doc.putItem(params, function (err, response) {
+        db.doc.put(params, function (err, response) {
           if (err) {
             reject(new Error(err));
           } else {
@@ -428,7 +421,7 @@ var Model = (function () {
       };
 
       return new Promise(function (resolve, reject) {
-        db.doc.updateItem(params, function (err, response) {
+        db.doc.update(params, function (err, response) {
           if (err) {
             reject(new Error(err));
           } else {
@@ -443,17 +436,31 @@ var Model = (function () {
   }, {
     key: 'find',
     value: function find(query) {
-      var filter = [];
+      var filter = "";
+      var attributes = {};
+      var attributeNames = {};
       var name = "";
 
       for (var key in query) {
         name = key;
-        filter.push(db.doc.Condition(key, "EQ", query[key]));
+
+        var attrName = '#' + key;
+        attributeNames[attrName] = key;
+
+        if (filter === "") {
+          filter = attrName + ' = :v_' + key;
+        } else {
+          filter += ' AND ' + attrName + ' = :v_' + key;
+        }
+
+        attributes[':v_' + key] = query[key];
       }
 
       var params = {
         TableName: this.table,
-        ScanFilter: filter,
+        FilterExpression: filter,
+        ExpressionAttributeNames: attributeNames,
+        ExpressionAttributeValues: attributes,
         Select: "ALL_ATTRIBUTES"
       };
 
@@ -523,7 +530,7 @@ var Model = (function () {
       params.Key[this.hashKey] = key;
 
       return new Promise(function (resolve, reject) {
-        db.doc.getItem(params, function (err, response) {
+        db.doc.get(params, function (err, response) {
           if (err) {
             reject(new Error(err));
           } else if (Object.keys(response).length === 0) {
@@ -550,101 +557,7 @@ var Model = (function () {
 })();
 
 exports.Model = Model;
-}).call(this,require("/Users/davidvanleeuwen/Projects/simple-dyno/node_modules/browserify/node_modules/process/browser.js"))
-},{"./db":1,"./debug":2,"/Users/davidvanleeuwen/Projects/simple-dyno/node_modules/browserify/node_modules/process/browser.js":5,"bcrypt":undefined,"joi":undefined}],5:[function(require,module,exports){
-// shim for using process in browser
-
-var process = module.exports = {};
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = setTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    clearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        setTimeout(drainQueue, 0);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
-},{}],6:[function(require,module,exports){
+},{"./db":1,"./debug":2,"bcrypt":undefined,"joi":undefined}],5:[function(require,module,exports){
 module.exports={
   "name": "simple-dyno",
   "version": "0.0.1",
@@ -653,16 +566,19 @@ module.exports={
   "directories": {
     "test": "test"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awkward/simple-dyno.git"
+  },
   "scripts": {
     "test": "make test"
   },
   "author": "David van Leeuwen",
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.1.39",
+    "aws-sdk": "^2.2.10",
     "babel": "^5.8.19",
     "bcrypt": "^0.8.5",
-    "dynamodb-doc": "^1.0.0",
     "joi": "^6.5.0",
     "local-dynamo": "^0.1.1"
   },

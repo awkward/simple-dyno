@@ -6,16 +6,19 @@
   "directories": {
     "test": "test"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awkward/simple-dyno.git"
+  },
   "scripts": {
     "test": "make test"
   },
   "author": "David van Leeuwen",
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.1.39",
+    "aws-sdk": "^2.2.10",
     "babel": "^5.8.19",
     "bcrypt": "^0.8.5",
-    "dynamodb-doc": "^1.0.0",
     "joi": "^6.5.0",
     "local-dynamo": "^0.1.1"
   },
