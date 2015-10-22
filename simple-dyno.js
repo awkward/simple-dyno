@@ -100,6 +100,7 @@ function setTable(name, hashKey, rangeKey) {
     // });
   });
 }
+
 },{"./debug":2,"aws-sdk":undefined,"child_process":undefined,"local-dynamo":undefined}],2:[function(require,module,exports){
 "use strict";
 
@@ -139,6 +140,7 @@ exports.Debug = Debug;
 
 var debug = new Debug();
 exports["default"] = debug;
+
 },{}],3:[function(require,module,exports){
 'use strict';
 
@@ -174,6 +176,7 @@ Object.defineProperty(exports, 'Model', {
     return _model.Model;
   }
 });
+
 },{"../package":5,"./db":1,"./debug":2,"./model":4}],4:[function(require,module,exports){
 'use strict';
 
@@ -301,24 +304,13 @@ var Model = (function () {
   }, {
     key: 'create',
     value: function create(item) {
-      var _this = this;
-
       var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
       // validation
       if (!options.skipValidation && this.schema) {
-        var _ret = (function () {
-          var result = _this.validate(item, _this.schema);
-          if (result.error) {
-            return {
-              v: new Promise(function (resolve, reject) {
-                reject(new Error(result.error));
-              })
-            };
-          }
-        })();
-
-        if (typeof _ret === 'object') return _ret.v;
+        this.validate(item, this.schema)['catch'](function (err) {
+          throw err;
+        });
       }
 
       // encrypt fields that need to be encrypted
@@ -481,7 +473,7 @@ var Model = (function () {
   }, {
     key: 'query',
     value: function query(indexName, _query) {
-      var _this2 = this;
+      var _this = this;
 
       if (_debug2['default'].local || process.env.NODE_ENV === 'test') {
         return this.find(_query);
@@ -496,7 +488,7 @@ var Model = (function () {
 
         // setup parameters to do query with
         var params = {
-          TableName: _this2.table,
+          TableName: _this.table,
           IndexName: indexName,
           KeyConditionExpression: key + '=:v_' + key
         };
@@ -544,12 +536,13 @@ var Model = (function () {
   }, {
     key: 'validate',
     value: function validate(value) {
-      var result = _joi2['default'].validate(value, this.schema);
-      if (result.error) {
-        return { error: result.error };
-      } else if (result.value) {
-        return result.value;
-      }
+      var _this2 = this;
+
+      return new Promise(function (resolve, reject) {
+        _joi2['default'].validate(value, _this2.schema, function (err, result) {
+          if (err) return reject(err);else resolve(result.value);
+        });
+      });
     }
   }]);
 
@@ -557,6 +550,7 @@ var Model = (function () {
 })();
 
 exports.Model = Model;
+
 },{"./db":1,"./debug":2,"bcrypt":undefined,"joi":undefined}],5:[function(require,module,exports){
 module.exports={
   "name": "simple-dyno",
@@ -577,12 +571,13 @@ module.exports={
   "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.2.10",
-    "babel": "^5.8.19",
+    "babel": "^5.8.23",
     "bcrypt": "^0.8.5",
     "joi": "^6.5.0",
     "local-dynamo": "^0.1.1"
   },
   "devDependencies": {
+    "babelify": "^6.4.0",
     "browserify": "^11.1.0",
     "chai": "^3.0.0",
     "mocha": "^2.2.5",

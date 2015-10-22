@@ -5,15 +5,8 @@ JS := $(shell find lib/ -name "*.js")
 install:
 	@npm install $(REGISTRY)
 
-simple-dyno.js: build
-	./node_modules/.bin/browserify --no-bundle-external --standalone simple-dyno ./build/index.js > ./simple-dyno.js
-
-build: $(JS) node_modules
-	rm -rf build/
-	./node_modules/.bin/babel lib \
-		--modules common \
-		--out-dir build \
-		--stage 4
+simple-dyno.js:
+	./node_modules/.bin/browserify -t babelify --no-bundle-external --standalone simple-dyno ./lib/index.js > ./simple-dyno.js
 
 .PHONY: test
 test: test-unit test-integration

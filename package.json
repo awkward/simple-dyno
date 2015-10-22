@@ -17,12 +17,13 @@
   "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.2.10",
-    "babel": "^5.8.19",
+    "babel": "^5.8.23",
     "bcrypt": "^0.8.5",
     "joi": "^6.5.0",
     "local-dynamo": "^0.1.1"
   },
   "devDependencies": {
+    "babelify": "^6.4.0",
     "browserify": "^11.1.0",
     "chai": "^3.0.0",
     "mocha": "^2.2.5",
