@@ -27,8 +27,7 @@ var _child_process = require('child_process');
 
 var logger = _debug2['default'].withTopic('simpledyno:db');
 
-// http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB.html
-// https://github.com/awslabs/dynamodb-document-js-sdk
+// http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html
 
 var client = undefined;
 exports.client = client;
@@ -424,7 +423,25 @@ var Model = (function () {
     }
   }, {
     key: 'destroy',
-    value: function destroy(key) {}
+    value: function destroy(keyValue) {
+      var key = {};
+      key[this.hashKey] = keyValue;
+
+      var params = {
+        TableName: this.table,
+        Key: key
+      };
+
+      return new Promise(function (resolve, reject) {
+        db.doc['delete'](params, function (err, response) {
+          if (err) {
+            reject(new Error(err));
+          } else {
+            resolve(response);
+          }
+        });
+      });
+    }
   }, {
     key: 'find',
     value: function find(query) {
