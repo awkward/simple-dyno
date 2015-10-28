@@ -303,53 +303,55 @@ var Model = (function () {
   }, {
     key: 'create',
     value: function create(item) {
+      var _this = this;
+
       var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
-      // validation
-      if (!options.skipValidation && this.schema) {
-        this.validate(item, this.schema)['catch'](function (err) {
-          throw err;
-        });
-      }
+      return new Promise(function (resolve, reject) {
+        // validation
+        if (!options.skipValidation && _this.schema) {
+          _this.validate(item, _this.schema)['catch'](function (err) {
+            reject(err);
+          });
+        }
 
-      // encrypt fields that need to be encrypted
-      if (this.encryptFields) {
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
+        // encrypt fields that need to be encrypted
+        if (_this.encryptFields) {
+          var _iteratorNormalCompletion2 = true;
+          var _didIteratorError2 = false;
+          var _iteratorError2 = undefined;
 
-        try {
-          for (var _iterator2 = this.encryptFields[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var i = _step2.value;
-
-            var salt = _bcrypt2['default'].genSaltSync(10);
-            var hash = _bcrypt2['default'].hashSync(item[i], salt);
-            item[i] = hash;
-          }
-        } catch (err) {
-          _didIteratorError2 = true;
-          _iteratorError2 = err;
-        } finally {
           try {
-            if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-              _iterator2['return']();
+            for (var _iterator2 = _this.encryptFields[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+              var i = _step2.value;
+
+              var salt = _bcrypt2['default'].genSaltSync(10);
+              var hash = _bcrypt2['default'].hashSync(item[i], salt);
+              item[i] = hash;
             }
+          } catch (err) {
+            _didIteratorError2 = true;
+            _iteratorError2 = err;
           } finally {
-            if (_didIteratorError2) {
-              throw _iteratorError2;
+            try {
+              if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+                _iterator2['return']();
+              }
+            } finally {
+              if (_didIteratorError2) {
+                throw _iteratorError2;
+              }
             }
           }
         }
-      }
 
-      item.createdAt = Date.now();
+        item.createdAt = Date.now();
 
-      var params = {
-        TableName: this.table,
-        Item: item
-      };
+        var params = {
+          TableName: _this.table,
+          Item: item
+        };
 
-      return new Promise(function (resolve, reject) {
         db.doc.put(params, function (err, response) {
           if (err) {
             reject(new Error(err));
@@ -490,7 +492,7 @@ var Model = (function () {
   }, {
     key: 'query',
     value: function query(indexName, _query) {
-      var _this = this;
+      var _this2 = this;
 
       if (_debug2['default'].local || process.env.NODE_ENV === 'test') {
         return this.find(_query);
@@ -505,7 +507,7 @@ var Model = (function () {
 
         // setup parameters to do query with
         var params = {
-          TableName: _this.table,
+          TableName: _this2.table,
           IndexName: indexName,
           KeyConditionExpression: key + '=:v_' + key
         };
@@ -553,10 +555,10 @@ var Model = (function () {
   }, {
     key: 'validate',
     value: function validate(value) {
-      var _this2 = this;
+      var _this3 = this;
 
       return new Promise(function (resolve, reject) {
-        _joi2['default'].validate(value, _this2.schema, function (err, result) {
+        _joi2['default'].validate(value, _this3.schema, function (err, result) {
           if (err) return reject(err);else resolve(result.value);
         });
       });
