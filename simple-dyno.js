@@ -40,7 +40,7 @@ function setConfig() {
 
   if (_debug2['default'].local || process.env.NODE_ENV === 'test') {
     try {
-      var stdout = (0, _child_process.execSync)("sudo killall java");
+      var stdout = (0, _child_process.execSync)("killall java");
       logger('killall java: ' + stdout.split('\n').join(''));
     } catch (e) {}
 
