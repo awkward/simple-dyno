@@ -40,8 +40,8 @@ function setConfig() {
 
   if (_debug2['default'].local || process.env.NODE_ENV === 'test') {
     try {
-      var stdout = (0, _child_process.execSync)("killall java");
-      logger('killall java: ' + stdout.split('\n').join(''));
+      // let stdout = execSync("sudo killall java");
+      // logger(`killall java: ${stdout.split('\n').join('')}`);
     } catch (e) {}
 
     localDynamo.launch(null, 4567);
@@ -425,14 +425,14 @@ var Model = (function () {
     }
   }, {
     key: 'destroy',
-    value: function destroy(keyValue) {
-      var key = {};
-      key[this.hashKey] = keyValue;
-
+    value: function destroy(key, secondKey) {
       var params = {
         TableName: this.table,
-        Key: key
+        Key: {}
       };
+
+      params.Key[this.hashKey] = keyValue;
+      if (secondKey && this.rangeKey) params.Key[this.rangeKey] = secondKey;
 
       return new Promise(function (resolve, reject) {
         db.doc['delete'](params, function (err, response) {
