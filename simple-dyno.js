@@ -40,8 +40,8 @@ function setConfig() {
 
   if (_debug2['default'].local || process.env.NODE_ENV === 'test') {
     try {
-      // let stdout = execSync("sudo killall java");
-      // logger(`killall java: ${stdout.split('\n').join('')}`);
+      var stdout = (0, _child_process.execSync)("killall java");
+      logger('killall java: ' + stdout.split('\n').join(''));
     } catch (e) {}
 
     localDynamo.launch(null, 4567);
