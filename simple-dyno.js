@@ -244,7 +244,7 @@ var Model = (function () {
         key[this.hashKey] = values[0];
         if (values[1] && this.rangeKey) key[this.rangeKey] = values[1];
       } else {
-        key[this.hashKey] = values[0];
+        key[this.hashKey] = values;
       }
       return key;
     }
