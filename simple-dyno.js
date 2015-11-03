@@ -237,6 +237,18 @@ var Model = (function () {
   }
 
   _createClass(Model, [{
+    key: '_keyObjectForValues',
+    value: function _keyObjectForValues(values) {
+      var key = {};
+      if (values instanceof Array) {
+        key[this.hashKey] = values[0];
+        if (values[1] && this.rangeKey) key[this.rangeKey] = values[1];
+      } else {
+        key[this.hashKey] = values[0];
+      }
+      return key;
+    }
+  }, {
     key: 'serialize',
     value: function serialize(object) {
       var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
@@ -363,10 +375,7 @@ var Model = (function () {
     }
   }, {
     key: 'update',
-    value: function update(keyValue, attributes) {
-      var key = {};
-      key[this.hashKey] = keyValue;
-
+    value: function update(keyValues, attributes) {
       if (this.encryptFields) {
         var _iteratorNormalCompletion3 = true;
         var _didIteratorError3 = false;
@@ -398,10 +407,10 @@ var Model = (function () {
         }
       }
 
-      for (var _key in attributes) {
-        attributes[_key] = {
+      for (var key in attributes) {
+        attributes[key] = {
           Action: "PUT",
-          Value: attributes[_key]
+          Value: attributes[key]
         };
       }
 
@@ -409,7 +418,7 @@ var Model = (function () {
 
       var params = {
         TableName: this.table,
-        Key: key,
+        Key: this._keyObjectForValues(keyValues),
         AttributeUpdates: attributes
       };
 
@@ -425,14 +434,11 @@ var Model = (function () {
     }
   }, {
     key: 'destroy',
-    value: function destroy(key, secondKey) {
+    value: function destroy(keyValues) {
       var params = {
         TableName: this.table,
-        Key: {}
+        Key: this._keyObjectForValues(keyValues)
       };
-
-      params.Key[this.hashKey] = keyValue;
-      if (secondKey && this.rangeKey) params.Key[this.rangeKey] = secondKey;
 
       return new Promise(function (resolve, reject) {
         db.doc['delete'](params, function (err, response) {
@@ -532,14 +538,11 @@ var Model = (function () {
     }
   }, {
     key: 'get',
-    value: function get(key, secondKey) {
+    value: function get(keyValues) {
       var params = {
         TableName: this.table,
-        Key: {}
+        Key: this._keyObjectForValues(keyValues)
       };
-
-      params.Key[this.hashKey] = key;
-      if (secondKey && this.rangeKey) params.Key[this.rangeKey] = secondKey;
 
       return new Promise(function (resolve, reject) {
         db.doc.get(params, function (err, response) {
