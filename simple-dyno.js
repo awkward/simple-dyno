@@ -532,13 +532,14 @@ var Model = (function () {
     }
   }, {
     key: 'get',
-    value: function get(key) {
+    value: function get(key, secondKey) {
       var params = {
         TableName: this.table,
         Key: {}
       };
 
       params.Key[this.hashKey] = key;
+      if (secondKey && this.rangeKey) params.Key[this.rangeKey] = secondKey;
 
       return new Promise(function (resolve, reject) {
         db.doc.get(params, function (err, response) {
