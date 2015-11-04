@@ -451,27 +451,39 @@ var Model = (function () {
       });
     }
   }, {
-    key: 'find',
-    value: function find(query) {
-      var filter = "";
+    key: '_attributesAndNamesForQuery',
+    value: function _attributesAndNamesForQuery(query) {
       var attributes = {};
       var attributeNames = {};
-      var name = "";
+      var expression = undefined,
+          keyAttr = undefined;
 
       for (var key in query) {
-        name = key;
+        keyAttr = key;
 
         var attrName = '#' + key;
         attributeNames[attrName] = key;
 
-        if (filter === "") {
-          filter = attrName + ' = :v_' + key;
+        if (expression === "") {
+          expression = attrName + ' = :v_' + key;
         } else {
-          filter += ' AND ' + attrName + ' = :v_' + key;
+          expression += ' AND ' + attrName + ' = :v_' + key;
         }
 
         attributes[':v_' + key] = query[key];
       }
+
+      return { expression: expression, attributeNames: attributeNames, attributes: attributes, keyAttr: keyAttr };
+    }
+  }, {
+    key: 'find',
+    value: function find(query) {
+      var _attributesAndNamesForQuery2 = this._attributesAndNamesForQuery(query);
+
+      var expression = _attributesAndNamesForQuery2.expression;
+      var attributeNames = _attributesAndNamesForQuery2.attributeNames;
+      var attributes = _attributesAndNamesForQuery2.attributes;
+      var keyAttr = _attributesAndNamesForQuery2.keyAttr;
 
       var params = {
         TableName: this.table,
@@ -487,7 +499,7 @@ var Model = (function () {
             reject(new Error(err));
           } else {
             if (response.Count === 0) {
-              reject(new Error(name + ' could not be found'));
+              reject(new Error(keyAttr + ' could not be found'));
             } else {
               resolve(response.Items);
             }
@@ -507,20 +519,21 @@ var Model = (function () {
       return new Promise(function (resolve, reject) {
         if (indexName === null) reject(new Error('Must provide an indexName'));
 
-        // extract key/value pair from query
-        var key = Object.keys(_query)[0];
-        var value = _query[key];
+        var _attributesAndNamesForQuery3 = _this2._attributesAndNamesForQuery(_query);
+
+        var expression = _attributesAndNamesForQuery3.expression;
+        var attributeNames = _attributesAndNamesForQuery3.attributeNames;
+        var attributes = _attributesAndNamesForQuery3.attributes;
+        var keyAttr = _attributesAndNamesForQuery3.keyAttr;
 
         // setup parameters to do query with
         var params = {
           TableName: _this2.table,
           IndexName: indexName,
-          KeyConditionExpression: key + '=:v_' + key
+          KeyConditionExpression: expression,
+          ExpressionAttributeNames: attributeNames,
+          ExpressionAttributeValues: attributes
         };
-
-        // setup the value to query with
-        params['ExpressionAttributeValues'] = {};
-        params['ExpressionAttributeValues'][':v_' + key] = value;
 
         // perform the query
         db.doc.query(params, function (err, response) {
@@ -528,7 +541,7 @@ var Model = (function () {
             reject(new Error(err));
           } else {
             if (response.Count === 0) {
-              reject(new Error(key + ' could not be found'));
+              reject(new Error(keyAttr + ' could not be found'));
             } else {
               resolve(response.Items);
             }
