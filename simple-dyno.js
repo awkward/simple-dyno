@@ -487,7 +487,7 @@ var Model = (function () {
 
       var params = {
         TableName: this.table,
-        FilterExpression: filter,
+        FilterExpression: expression,
         ExpressionAttributeNames: attributeNames,
         ExpressionAttributeValues: attributes,
         Select: "ALL_ATTRIBUTES"
