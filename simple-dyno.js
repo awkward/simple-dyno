@@ -453,10 +453,10 @@ var Model = (function () {
   }, {
     key: '_attributesAndNamesForQuery',
     value: function _attributesAndNamesForQuery(query) {
-      var attributes = {};
-      var attributeNames = {};
-      var expression = undefined,
-          keyAttr = undefined;
+      var attributes = {},
+          attributeNames = {},
+          expression = "",
+          keyAttr = "";
 
       for (var key in query) {
         keyAttr = key;

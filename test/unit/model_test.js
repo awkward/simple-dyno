@@ -87,6 +87,12 @@ describe('SimpleDyno.Model', function() {
 
       });
     });
+
+    describe('#_attributesAndNamesForQuery()', function() {
+      it('should return the right format', function() {
+
+      });
+    });
   });
 
 });
