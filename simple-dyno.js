@@ -322,9 +322,7 @@ var Model = (function () {
       return new Promise(function (resolve, reject) {
         // validation
         if (!options.skipValidation && _this.schema) {
-          _this.validate(item, _this.schema)['catch'](function (err) {
-            reject(err);
-          });
+          _this.validate(item, _this.schema)['catch'](reject);
         }
 
         // encrypt fields that need to be encrypted
@@ -376,53 +374,63 @@ var Model = (function () {
   }, {
     key: 'update',
     value: function update(keyValues, attributes) {
-      if (this.encryptFields) {
-        var _iteratorNormalCompletion3 = true;
-        var _didIteratorError3 = false;
-        var _iteratorError3 = undefined;
+      var _this2 = this;
 
-        try {
-          for (var _iterator3 = this.encryptFields[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-            var i = _step3.value;
+      var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
-            if (attributes[i]) {
-              var salt = _bcrypt2['default'].genSaltSync(10);
-              var hash = _bcrypt2['default'].hashSync(attributes[i], salt);
-              attributes[i] = hash;
-            }
-          }
-        } catch (err) {
-          _didIteratorError3 = true;
-          _iteratorError3 = err;
-        } finally {
+      return new Promise(function (resolve, reject) {
+        // validation
+        if (!options.skipValidation && _this2.schema) {
+          _this2.validate(attributes, _this2.schema)['catch'](reject);
+        }
+
+        // encrypt fields that need to be encrypted
+        if (_this2.encryptFields) {
+          var _iteratorNormalCompletion3 = true;
+          var _didIteratorError3 = false;
+          var _iteratorError3 = undefined;
+
           try {
-            if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-              _iterator3['return']();
+            for (var _iterator3 = _this2.encryptFields[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+              var i = _step3.value;
+
+              if (attributes[i]) {
+                var salt = _bcrypt2['default'].genSaltSync(10);
+                var hash = _bcrypt2['default'].hashSync(attributes[i], salt);
+                attributes[i] = hash;
+              }
             }
+          } catch (err) {
+            _didIteratorError3 = true;
+            _iteratorError3 = err;
           } finally {
-            if (_didIteratorError3) {
-              throw _iteratorError3;
+            try {
+              if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+                _iterator3['return']();
+              }
+            } finally {
+              if (_didIteratorError3) {
+                throw _iteratorError3;
+              }
             }
           }
         }
-      }
 
-      for (var key in attributes) {
-        attributes[key] = {
-          Action: "PUT",
-          Value: attributes[key]
+        for (var key in attributes) {
+          attributes[key] = {
+            Action: "PUT",
+            Value: attributes[key]
+          };
+        }
+
+        attributes.updatedAt = { Action: "PUT", Value: Date.now() };
+
+        var params = {
+          TableName: _this2.table,
+          Key: _this2._keyObjectForValues(keyValues),
+          AttributeUpdates: attributes
         };
-      }
 
-      attributes.updatedAt = { Action: "PUT", Value: Date.now() };
-
-      var params = {
-        TableName: this.table,
-        Key: this._keyObjectForValues(keyValues),
-        AttributeUpdates: attributes
-      };
-
-      return new Promise(function (resolve, reject) {
         db.doc.update(params, function (err, response) {
           if (err) {
             reject(new Error(err));
@@ -510,7 +518,7 @@ var Model = (function () {
   }, {
     key: 'query',
     value: function query(indexName, _query) {
-      var _this2 = this;
+      var _this3 = this;
 
       if (_debug2['default'].local || process.env.NODE_ENV === 'test') {
         return this.find(_query);
@@ -519,7 +527,7 @@ var Model = (function () {
       return new Promise(function (resolve, reject) {
         if (indexName === null) reject(new Error('Must provide an indexName'));
 
-        var _attributesAndNamesForQuery3 = _this2._attributesAndNamesForQuery(_query);
+        var _attributesAndNamesForQuery3 = _this3._attributesAndNamesForQuery(_query);
 
         var expression = _attributesAndNamesForQuery3.expression;
         var attributeNames = _attributesAndNamesForQuery3.attributeNames;
@@ -528,7 +536,7 @@ var Model = (function () {
 
         // setup parameters to do query with
         var params = {
-          TableName: _this2.table,
+          TableName: _this3.table,
           IndexName: indexName,
           KeyConditionExpression: expression,
           ExpressionAttributeNames: attributeNames,
@@ -572,10 +580,10 @@ var Model = (function () {
   }, {
     key: 'validate',
     value: function validate(value) {
-      var _this3 = this;
+      var _this4 = this;
 
       return new Promise(function (resolve, reject) {
-        _joi2['default'].validate(value, _this3.schema, function (err, result) {
+        _joi2['default'].validate(value, _this4.schema, function (err, result) {
           if (err) return reject(err);else resolve(result.value);
         });
       });
@@ -609,7 +617,7 @@ module.exports={
     "aws-sdk": "^2.2.10",
     "babel": "^5.8.23",
     "bcrypt": "^0.8.5",
-    "joi": "^6.5.0",
+    "joi": "^7.0.0",
     "local-dynamo": "^0.1.1"
   },
   "devDependencies": {
