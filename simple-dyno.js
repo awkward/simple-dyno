@@ -617,7 +617,7 @@ module.exports={
     "aws-sdk": "^2.2.10",
     "babel": "^5.8.23",
     "bcrypt": "^0.8.5",
-    "joi": "^7.0.0",
+    "joi": "^6.9.1",
     "local-dynamo": "^0.1.1"
   },
   "devDependencies": {
