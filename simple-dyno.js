@@ -5,6 +5,7 @@ Object.defineProperty(exports, '__esModule', {
   value: true
 });
 exports.setConfig = setConfig;
+exports.reset = reset;
 exports.setTable = setTable;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
@@ -57,10 +58,23 @@ if (!_debug2['default'].local || process.env.NODE_ENV !== 'test') {
   setConfig();
 }
 
+function reset() {
+  setConfig();
+  var promises = Object.assign([], tables);
+  tables = [];
+
+  promises = promises.map(function (item) {
+    return setTable(item.name, item.hashKey, item.rangeKey);
+  });
+  return Promise.all(promises);
+}
+
+var tables = [];
+
 function setTable(name, hashKey, rangeKey) {
+  tables.push({ name: name, hashKey: hashKey, rangeKey: rangeKey });
   return new Promise(function (resolve, reject) {
     // Check if the table already exists
-    // client.deleteTable({TableName: name}, function() {
     client.listTables({}, function (error, data) {
       if (error) return reject(error);
       if (data && data.TableNames.length) {
@@ -96,7 +110,6 @@ function setTable(name, hashKey, rangeKey) {
         resolve();
       });
     });
-    // });
   });
 }
 
@@ -164,6 +177,12 @@ Object.defineProperty(exports, 'setConfig', {
   enumerable: true,
   get: function get() {
     return _db.setConfig;
+  }
+});
+Object.defineProperty(exports, 'reset', {
+  enumerable: true,
+  get: function get() {
+    return _db.reset;
   }
 });
 

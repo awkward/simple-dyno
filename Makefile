@@ -1,4 +1,3 @@
-REGISTRY = "--registry=http://registry.npm.taobao.org"
 JS := $(shell find lib/ -name "*.js")
 
 .PHONY: install
