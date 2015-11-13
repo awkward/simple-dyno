@@ -39,7 +39,9 @@ exports.doc = doc;
 function setConfig() {
   var options = arguments.length <= 0 || arguments[0] === undefined ? { accessKeyId: "", secretAccessKey: "", region: "eu-west-1" } : arguments[0];
 
-  if (_debug2['default'].local || process.env.NODE_ENV === 'test') {
+  if (process.env.NODE_ENV === 'travis') {
+    options.endpoint = new AWS.Endpoint('http://localhost:8000');
+  } else if (_debug2['default'].local || process.env.NODE_ENV === 'test') {
     try {
       var stdout = (0, _child_process.execSync)("killall java");
       logger('killall java: ' + stdout.split('\n').join(''));
@@ -48,8 +50,6 @@ function setConfig() {
     localDynamo.launch(null, 4567);
     options.endpoint = new AWS.Endpoint('http://localhost:4567');
     logger("Started local DynamoDB on http://localhost:4567");
-  } else if (process.env.NODE_ENV === 'travis') {
-    options.endpoint = new AWS.Endpoint('http://localhost:8000');
   }
 
   exports.client = client = new AWS.DynamoDB(options);
