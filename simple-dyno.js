@@ -40,10 +40,10 @@ function setConfig() {
   var options = arguments.length <= 0 || arguments[0] === undefined ? { accessKeyId: "", secretAccessKey: "", region: "eu-west-1" } : arguments[0];
 
   if (_debug2['default'].local || process.env.NODE_ENV === 'test') {
-    try {
-      var stdout = (0, _child_process.execSync)("killall java");
-      logger('killall java: ' + stdout.split('\n').join(''));
-    } catch (e) {}
+    // try {
+    //   let stdout = execSync("killall java");
+    //   logger(`killall java: ${stdout.split('\n').join('')}`);
+    // } catch (e) {}
 
     localDynamo.launch(null, 4567);
     options.endpoint = new AWS.Endpoint('http://localhost:4567');
@@ -617,7 +617,7 @@ exports.Model = Model;
 },{"./db":1,"./debug":2,"bcrypt":undefined,"joi":undefined}],5:[function(require,module,exports){
 module.exports={
   "name": "simple-dyno",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Wrapper around AWS DynamoDB SDK to make things easier",
   "main": "simple-dyno.js",
   "directories": {
