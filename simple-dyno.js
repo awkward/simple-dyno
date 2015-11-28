@@ -46,7 +46,7 @@ function setConfig() {
       logger('killall java: ' + stdout.split('\n').join(''));
     } catch (e) {}
     var dbDir = null;
-    if (!inMemory) dbDir = __dirname + '/database';
+    if (!options.inMemory) dbDir = __dirname + '/database';
     localDynamo.launch(dbDir, 4567);
     options.endpoint = new AWS.Endpoint('http://localhost:4567');
     logger("Started local DynamoDB on http://localhost:4567");
