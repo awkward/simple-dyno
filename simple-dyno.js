@@ -281,10 +281,75 @@ var Model = (function () {
       }
 
       var serializer = this.serializers[format];
-
       var newObject = {};
-      for (var key in object) {
-        if (typeof serializer === "undefined" || serializer.includes(key)) {
+
+      if (serializer) {
+        var _iteratorNormalCompletion;
+
+        var _didIteratorError;
+
+        var _iteratorError;
+
+        var _iterator, _step;
+
+        (function () {
+          // Get property from an object and set to new object
+          var getProperty = function getProperty(_x5, _x6, _x7) {
+            var _again = true;
+
+            _function: while (_again) {
+              var newObj = _x5,
+                  obj = _x6,
+                  keys = _x7;
+              _again = false;
+
+              var key = keys[0];
+              if (!obj) return;
+              keys = keys.filter(function (item) {
+                return item !== key;
+              });
+              if (!newObj[key]) newObj[key] = {};
+              if (keys.length) {
+                _x5 = newObj[key];
+                _x6 = obj[key];
+                _x7 = keys;
+                _again = true;
+                key = undefined;
+                continue _function;
+              }
+              newObj[key] = obj[key];
+            }
+          };
+
+          // Recursively get all properties (using a dot notation too, e.g.: profile.firstname)
+          _iteratorNormalCompletion = true;
+          _didIteratorError = false;
+          _iteratorError = undefined;
+
+          try {
+            for (_iterator = serializer[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              var key = _step.value;
+
+              var keys = key.split(".");
+              getProperty(newObject, object, keys);
+            }
+          } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion && _iterator['return']) {
+                _iterator['return']();
+              }
+            } finally {
+              if (_didIteratorError) {
+                throw _iteratorError;
+              }
+            }
+          }
+        })();
+      } else {
+        for (var key in object) {
           newObject[key] = object[key];
         }
       }
@@ -296,13 +361,13 @@ var Model = (function () {
     value: function defineSchema(schema) {
       var joiSchema = {};
 
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
 
       try {
-        for (var _iterator = Object.keys(schema)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var key = _step.value;
+        for (var _iterator2 = Object.keys(schema)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var key = _step2.value;
 
           var item = schema[key];
           if (item.isJoi) {
@@ -313,16 +378,16 @@ var Model = (function () {
           }
         }
       } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator['return']) {
-            _iterator['return']();
+          if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+            _iterator2['return']();
           }
         } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
+          if (_didIteratorError2) {
+            throw _iteratorError2;
           }
         }
       }
@@ -349,29 +414,29 @@ var Model = (function () {
 
         // encrypt fields that need to be encrypted
         if (_this.encryptFields) {
-          var _iteratorNormalCompletion2 = true;
-          var _didIteratorError2 = false;
-          var _iteratorError2 = undefined;
+          var _iteratorNormalCompletion3 = true;
+          var _didIteratorError3 = false;
+          var _iteratorError3 = undefined;
 
           try {
-            for (var _iterator2 = _this.encryptFields[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-              var i = _step2.value;
+            for (var _iterator3 = _this.encryptFields[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+              var i = _step3.value;
 
               var salt = _bcrypt2['default'].genSaltSync(10);
               var hash = _bcrypt2['default'].hashSync(item[i], salt);
               item[i] = hash;
             }
           } catch (err) {
-            _didIteratorError2 = true;
-            _iteratorError2 = err;
+            _didIteratorError3 = true;
+            _iteratorError3 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-                _iterator2['return']();
+              if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+                _iterator3['return']();
               }
             } finally {
-              if (_didIteratorError2) {
-                throw _iteratorError2;
+              if (_didIteratorError3) {
+                throw _iteratorError3;
               }
             }
           }
@@ -408,13 +473,13 @@ var Model = (function () {
 
         // encrypt fields that need to be encrypted
         if (_this2.encryptFields) {
-          var _iteratorNormalCompletion3 = true;
-          var _didIteratorError3 = false;
-          var _iteratorError3 = undefined;
+          var _iteratorNormalCompletion4 = true;
+          var _didIteratorError4 = false;
+          var _iteratorError4 = undefined;
 
           try {
-            for (var _iterator3 = _this2.encryptFields[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-              var i = _step3.value;
+            for (var _iterator4 = _this2.encryptFields[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+              var i = _step4.value;
 
               if (attributes[i]) {
                 var salt = _bcrypt2['default'].genSaltSync(10);
@@ -423,16 +488,16 @@ var Model = (function () {
               }
             }
           } catch (err) {
-            _didIteratorError3 = true;
-            _iteratorError3 = err;
+            _didIteratorError4 = true;
+            _iteratorError4 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-                _iterator3['return']();
+              if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+                _iterator4['return']();
               }
             } finally {
-              if (_didIteratorError3) {
-                throw _iteratorError3;
+              if (_didIteratorError4) {
+                throw _iteratorError4;
               }
             }
           }
