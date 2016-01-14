@@ -1,6 +1,5 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-import debug from '../../lib/debug';
 import * as SimpleDyno from '../../lib/index';
 import * as db from '../../lib/db';
 import Joi from 'joi';
