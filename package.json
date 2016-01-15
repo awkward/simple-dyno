@@ -1,6 +1,6 @@
 {
   "name": "simple-dyno",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Wrapper around AWS DynamoDB SDK to make things easier",
   "main": "simple-dyno.js",
   "directories": {
@@ -26,6 +26,7 @@
     "babelify": "^6.4.0",
     "browserify": "^11.1.0",
     "chai": "^3.0.0",
+    "dotenv": "^1.2.0",
     "mocha": "^2.2.5",
     "nock": "^2.7.0",
     "sinon": "^1.15.4"

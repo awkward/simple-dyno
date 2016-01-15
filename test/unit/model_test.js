@@ -4,6 +4,8 @@ import * as SimpleDyno from '../../lib/index';
 import * as db from '../../lib/db';
 import Joi from 'joi';
 
+require('dotenv').load();
+
 describe('SimpleDyno.Model', function() {
 
   describe('#constructor()', function() {
@@ -26,14 +28,12 @@ describe('SimpleDyno.Model', function() {
       let spy = sinon.spy(db, "setTable");
       new SimpleDyno.Model({table: "", schema: {}, hashKey: ""});
       expect(spy.called).to.be.true;
+      spy.restore();
     });
   });
 
   describe('Instance methods:', function () {
-    SimpleDyno.setConfig({"accessKeyId": "AWS_ACCESS_KEY", "secretAccessKey": "AWS_SECRET", "region": "AWS_REGION"});
-
     let model;
-
     beforeEach(function() {
       model = new SimpleDyno.Model({
         table: "users",
@@ -64,8 +64,12 @@ describe('SimpleDyno.Model', function() {
     });
 
     describe('#create()', function() {
-      it('should do something', function() {
-
+      it('should call doc.put', function() {
+        let spy = sinon.spy(db.doc, "put");
+        model.create({email: "test@test.com"});
+        console.log(spy)
+        expect(spy.called).to.be.true;
+        spy.restore();
       });
     });
 

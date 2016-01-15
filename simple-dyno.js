@@ -4,6 +4,7 @@
 Object.defineProperty(exports, '__esModule', {
   value: true
 });
+exports.setConfig = setConfig;
 exports.reset = reset;
 exports.setTable = setTable;
 
@@ -26,20 +27,29 @@ exports.client = client;
 var doc = undefined;
 
 exports.doc = doc;
-function setConfig() {
-  var options = { accessKeyId: process.env.DYNO_AWS_KEY, secretAccessKey: process.env.DYNO_AWS_SECRET, region: process.env.DYNO_AWS_REGION };
-  var local = process.env.DYNO_LOCAL === 'true';
-  var inMemory = process.env.DYNO_IN_MEMORY === 'true';
+var localDyno = undefined;
+var configParams = {};
+
+function setConfig(params) {
+  params ? configParams = params : params = {};
+  var options = {
+    accessKeyId: process.env.DYNO_AWS_KEY || params.DYNO_AWS_KEY,
+    secretAccessKey: process.env.DYNO_AWS_SECRET || params.DYNO_AWS_SECRET,
+    region: process.env.DYNO_AWS_REGION || params.DYNO_AWS_REGION
+  };
+
+  var local = process.env.DYNO_LOCAL === 'true' || params.DYNO_LOCAL;
+  var inMemory = process.env.DYNO_IN_MEMORY === 'true' || params.DYNO_IN_MEMORY;
 
   if (local) {
     try {
-      (0, _child_process.execSync)("killall java"); // Derp! Don't have any other java processes running on your machine
+      if (localDyno.pid) (0, _child_process.execSync)('kill -9 ' + localDyno.pid);
     } catch (e) {}
 
     var dbDir = null;
     if (!inMemory) dbDir = './';
 
-    localDynamo.launch(dbDir, 8000);
+    localDyno = localDynamo.launch(dbDir, 8000);
     options.endpoint = new AWS.Endpoint('http://localhost:8000');
   }
 
@@ -47,10 +57,10 @@ function setConfig() {
   exports.doc = doc = new AWS.DynamoDB.DocumentClient(options);
 }
 
-setConfig();
+setConfig(configParams);
 
 function reset() {
-  setConfig();
+  setConfig(configParams);
   var promises = Object.assign([], tables);
   tables = [];
 
@@ -123,6 +133,12 @@ Object.defineProperty(exports, 'reset', {
     return _db.reset;
   }
 });
+Object.defineProperty(exports, 'setConfig', {
+  enumerable: true,
+  get: function get() {
+    return _db.setConfig;
+  }
+});
 
 var _model = require('./model');
 
@@ -167,8 +183,6 @@ var _bcrypt2 = _interopRequireDefault(_bcrypt);
 var _events = require('events');
 
 var _events2 = _interopRequireDefault(_events);
-
-console.log(_events2['default']);
 
 var Model = (function (_EventEmitter) {
   _inherits(Model, _EventEmitter);
@@ -652,6 +666,7 @@ module.exports={
     "babelify": "^6.4.0",
     "browserify": "^11.1.0",
     "chai": "^3.0.0",
+    "dotenv": "^1.2.0",
     "mocha": "^2.2.5",
     "nock": "^2.7.0",
     "sinon": "^1.15.4"
