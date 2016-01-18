@@ -1,17 +1,28 @@
 # simple-dyno
 
-Todo:
-- Nice validation error messages (Joi)
-- Think about returning itself and keeping a state for chaining purposes
+Easy, minimalist, ORM for [AWS DynamoDB](https://aws.amazon.com/dynamodb/)
 
-Example:
+## Installation
+```bash
+$ npm install simple-dyno
 ```
+
+## Features
+
+* Easy way to create a model, keeping your code consistent and saving it to DynamoDB
+* Serializers to format your (json) response
+* Validation based on [Joi](https://github.com/hapijs/joi)
+* Encryption using [bcrypt](https://github.com/ncb000gt/node.bcrypt.js) for your passwords
+* Local DynamoDB for testing purposes
+
+## Example
+```javascript
 // Import deps
-import SimpleDyno from 'simple-dyno';
+import { Model } from 'simple-dyno';
 import Joi from 'joi';
 
 // Add your own methods
-class UserModel extends SimpleDyno {
+class UserModel extends Model {
   myAwesomeMethod(obj) {
     return obj.firstName+obj.lastName;
   }
@@ -35,6 +46,6 @@ var User = new UserModel({
   }
 });
 
-var userObj = yield User.create({email: "test@simpledyno.com", access_token: generateToken(), password: "******"})
+var userObj = yield User.create({email: "test@simpledyno.com", access_token: "aW12k3KDASsd012Ms1Mf29Mc7", password: "******"})
 return User.serialize(userObj, {format: 'scary'});
 ```

@@ -4,7 +4,8 @@
 Object.defineProperty(exports, '__esModule', {
   value: true
 });
-exports.setConfig = setConfig;
+exports.config = config;
+exports.local = local;
 exports.reset = reset;
 exports.setTable = setTable;
 
@@ -25,42 +26,31 @@ var _child_process = require('child_process');
 var client = undefined;
 exports.client = client;
 var doc = undefined;
-
 exports.doc = doc;
-var localDyno = undefined;
-var configParams = {};
+var isLocal = undefined;
 
-function setConfig(params) {
-  params ? configParams = params : params = {};
-  var options = {
-    accessKeyId: process.env.DYNO_AWS_KEY || params.DYNO_AWS_KEY,
-    secretAccessKey: process.env.DYNO_AWS_SECRET || params.DYNO_AWS_SECRET,
-    region: process.env.DYNO_AWS_REGION || params.DYNO_AWS_REGION
-  };
+exports.isLocal = isLocal;
 
-  var local = process.env.DYNO_LOCAL === 'true' || params.DYNO_LOCAL;
-  var inMemory = process.env.DYNO_IN_MEMORY === 'true' || params.DYNO_IN_MEMORY;
-
-  if (local) {
-    try {
-      if (localDyno.pid) (0, _child_process.execSync)('kill -9 ' + localDyno.pid);
-    } catch (e) {}
-
-    var dbDir = null;
-    if (!inMemory) dbDir = './';
-
-    localDyno = localDynamo.launch(dbDir, 8000);
-    options.endpoint = new AWS.Endpoint('http://localhost:8000');
-  }
-
+function config(options) {
   exports.client = client = new AWS.DynamoDB(options);
   exports.doc = doc = new AWS.DynamoDB.DocumentClient(options);
 }
 
-setConfig(configParams);
+function local() {
+  var options = arguments.length <= 0 || arguments[0] === undefined ? { inMemory: true } : arguments[0];
+
+  exports.isLocal = isLocal = true;
+  var dbDir = null;
+  if (!options.inMemory) dbDir = './';
+  var localDyno = localDynamo.launch(dbDir, 8000);
+  config({ endpoint: new AWS.Endpoint('http://localhost:8000'), region: "eu-west-1" });
+  return localDyno;
+}
 
 function reset() {
-  setConfig(configParams);
+  var options = arguments.length <= 0 || arguments[0] === undefined ? { inMemory: true } : arguments[0];
+
+  local(options);
   var promises = Object.assign([], tables);
   tables = [];
 
@@ -73,6 +63,7 @@ function reset() {
 var tables = [];
 
 function setTable(name, hashKey, rangeKey) {
+  if (client === 'undefined' || doc === 'undefined') config();
   tables.push({ name: name, hashKey: hashKey, rangeKey: rangeKey });
   return new Promise(function (resolve, reject) {
     // Check if the table already exists
@@ -133,10 +124,16 @@ Object.defineProperty(exports, 'reset', {
     return _db.reset;
   }
 });
-Object.defineProperty(exports, 'setConfig', {
+Object.defineProperty(exports, 'config', {
   enumerable: true,
   get: function get() {
-    return _db.setConfig;
+    return _db.config;
+  }
+});
+Object.defineProperty(exports, 'local', {
+  enumerable: true,
+  get: function get() {
+    return _db.local;
   }
 });
 
@@ -196,9 +193,8 @@ var Model = (function (_EventEmitter) {
 
     _get(Object.getPrototypeOf(Model.prototype), 'constructor', this).call(this);
 
-    if (db.local && (typeof db.client === "undefined" || typeof db.doc === "undefined")) throw new Error("Not connected to AWS, please use SimpleDyno.setConfig before creating an instance");
-    if (typeof options.hashKey === "undefined") throw new Error("Please provide a hashKey field for the model");
-    if (typeof options.table === "undefined") throw new Error("Please provide a table name that you want to create/use");
+    if (typeof options.hashKey === "undefined" || options.hashKey === "") throw new Error("Please provide a hashKey field for the model");
+    if (typeof options.table === "undefined" || options.table === "") throw new Error("Please provide a table name that you want to create/use");
 
     this.db = db;
     this.encryptFields = [];
@@ -377,9 +373,11 @@ var Model = (function (_EventEmitter) {
             for (var _iterator3 = _this2.encryptFields[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
               var i = _step3.value;
 
-              var salt = _bcrypt2['default'].genSaltSync(10);
-              var hash = _bcrypt2['default'].hashSync(item[i], salt);
-              item[i] = hash;
+              if (item[i]) {
+                var salt = _bcrypt2['default'].genSaltSync(10);
+                var hash = _bcrypt2['default'].hashSync(item[i], salt);
+                item[i] = hash;
+              }
             }
           } catch (err) {
             _didIteratorError3 = true;
@@ -562,7 +560,7 @@ var Model = (function (_EventEmitter) {
     value: function query(indexName, _query) {
       var _this4 = this;
 
-      if (process.env.DYNO_LOCAL === 'true') {
+      if (db.isLocal) {
         return this.find(_query);
       }
 
@@ -640,7 +638,7 @@ exports.Model = Model;
 },{"./db":1,"bcrypt":undefined,"events":undefined,"joi":undefined}],4:[function(require,module,exports){
 module.exports={
   "name": "simple-dyno",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Wrapper around AWS DynamoDB SDK to make things easier",
   "main": "simple-dyno.js",
   "directories": {
@@ -663,9 +661,12 @@ module.exports={
     "local-dynamo": "^0.1.1"
   },
   "devDependencies": {
+    "babel": "^5.8.34",
     "babelify": "^6.4.0",
     "browserify": "^11.1.0",
     "chai": "^3.0.0",
+    "chai-as-promised": "^5.2.0",
+    "co-mocha": "^1.1.2",
     "dotenv": "^1.2.0",
     "mocha": "^2.2.5",
     "nock": "^2.7.0",

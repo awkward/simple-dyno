@@ -23,12 +23,13 @@
     "local-dynamo": "^0.1.1"
   },
   "devDependencies": {
+    "babel": "^5.8.34",
     "babelify": "^6.4.0",
     "browserify": "^11.1.0",
     "chai": "^3.0.0",
-    "dotenv": "^1.2.0",
+    "chai-as-promised": "^5.2.0",
+    "co-mocha": "^1.1.2",
     "mocha": "^2.2.5",
-    "nock": "^2.7.0",
     "sinon": "^1.15.4"
   }
 }
