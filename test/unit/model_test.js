@@ -10,18 +10,16 @@ import Joi from 'joi';
 
 import { execSync } from 'child_process';
 
-require('dotenv').load();
-
 describe('SimpleDyno.Model', function() {
 
   describe('#constructor()', function() {
     let localDB;
 
-    beforeEach(function () {
+    before(function () {
       localDB = SimpleDyno.local();
     });
 
-    afterEach(function () {
+    after(function () {
       execSync(`kill -9 ${localDB.pid}`);
     });
 
@@ -36,19 +34,12 @@ describe('SimpleDyno.Model', function() {
     it('should throw an error when there is no table given', function() {
       expect(function() { new SimpleDyno.Model({schema: {}, hashKey: ""}) }).to.throw();
     });
-
-    it('should call setTable', function() {
-      let spy = sinon.spy(db, "setTable");
-      new SimpleDyno.Model({table: "test", schema: {}, hashKey: "test"});
-      expect(spy.called).to.be.true;
-      spy.restore();
-    });
   });
 
   describe('Instance methods:', function () {
     let model, localDB;
 
-    before(function () {
+    before(function * () {
       localDB = SimpleDyno.local();
 
       model = new SimpleDyno.Model({
@@ -67,6 +58,8 @@ describe('SimpleDyno.Model', function() {
           }
         }
       });
+
+      yield SimpleDyno.load(model);
     });
 
     after(function () {

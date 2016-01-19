@@ -6,8 +6,7 @@ Object.defineProperty(exports, '__esModule', {
 });
 exports.config = config;
 exports.local = local;
-exports.reset = reset;
-exports.setTable = setTable;
+exports.load = load;
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
@@ -47,62 +46,54 @@ function local() {
   return localDyno;
 }
 
-function reset() {
-  var options = arguments.length <= 0 || arguments[0] === undefined ? { inMemory: true } : arguments[0];
-
-  local(options);
-  var promises = Object.assign([], tables);
-  tables = [];
-
-  promises = promises.map(function (item) {
-    return setTable(item.name, item.hashKey, item.rangeKey);
-  });
-  return Promise.all(promises);
-}
-
-var tables = [];
-
-function setTable(name, hashKey, rangeKey) {
+function load(models) {
   if (client === 'undefined' || doc === 'undefined') config();
-  tables.push({ name: name, hashKey: hashKey, rangeKey: rangeKey });
-  return new Promise(function (resolve, reject) {
-    // Check if the table already exists
-    client.listTables({}, function (error, data) {
-      if (error) return reject(error);
-      if (data && data.TableNames.length) {
-        // Found the table
-        var result = data.TableNames.find(function (item) {
-          item === name;
+
+  var createPromise = function createPromise(model) {
+    return new Promise(function (resolve, reject) {
+      // Check if the table already exists
+      client.listTables({}, function (error, data) {
+        if (error) return reject(error);
+        if (data && data.TableNames.length) {
+          // Found the table
+          var result = data.TableNames.find(function (item) {
+            item === model.table;
+          });
+          if (result) return resolve();
+        }
+
+        var AttributeDefinitions = [{ AttributeName: model.hashKey, AttributeType: 'S' }];
+        var KeySchema = [{ AttributeName: model.hashKey, KeyType: 'HASH' }];
+
+        if (model.rangeKey) {
+          AttributeDefinitions.push({ AttributeName: model.rangeKey, AttributeType: 'S' });
+          KeySchema.push({ AttributeName: model.rangeKey, KeyType: 'RANGE' });
+        }
+
+        // Format of the table
+        var table = {
+          AttributeDefinitions: AttributeDefinitions,
+          KeySchema: KeySchema,
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 5,
+            WriteCapacityUnits: 1
+          },
+          TableName: model.table
+        };
+
+        // Create the table
+        client.createTable(table, function (err, response) {
+          if (err) return reject(err);
+          resolve();
         });
-        if (result) return resolve();
-      }
-
-      var AttributeDefinitions = [{ AttributeName: hashKey, AttributeType: 'S' }];
-      var KeySchema = [{ AttributeName: hashKey, KeyType: 'HASH' }];
-
-      if (rangeKey) {
-        AttributeDefinitions.push({ AttributeName: rangeKey, AttributeType: 'S' });
-        KeySchema.push({ AttributeName: rangeKey, KeyType: 'RANGE' });
-      }
-
-      // Format of the table
-      var table = {
-        AttributeDefinitions: AttributeDefinitions,
-        KeySchema: KeySchema,
-        ProvisionedThroughput: {
-          ReadCapacityUnits: 1,
-          WriteCapacityUnits: 5
-        },
-        TableName: name
-      };
-
-      // Create the table
-      client.createTable(table, function (err, response) {
-        if (err) return reject(err);
-        resolve();
       });
     });
-  });
+  };
+
+  if (models.length) return Promise.all(models.map(function (model) {
+    return createPromise(model);
+  }));
+  return createPromise(models);
 }
 
 },{"aws-sdk":undefined,"child_process":undefined,"local-dynamo":undefined}],2:[function(require,module,exports){
@@ -136,6 +127,12 @@ Object.defineProperty(exports, 'local', {
     return _db.local;
   }
 });
+Object.defineProperty(exports, 'load', {
+  enumerable: true,
+  get: function get() {
+    return _db.load;
+  }
+});
 
 var _model = require('./model');
 
@@ -155,15 +152,11 @@ Object.defineProperty(exports, '__esModule', {
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x5, _x6, _x7) { var _again = true; _function: while (_again) { var object = _x5, property = _x6, receiver = _x7; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x5 = parent; _x6 = property; _x7 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var _joi = require('joi');
 
@@ -177,21 +170,11 @@ var _bcrypt = require('bcrypt');
 
 var _bcrypt2 = _interopRequireDefault(_bcrypt);
 
-var _events = require('events');
-
-var _events2 = _interopRequireDefault(_events);
-
-var Model = (function (_EventEmitter) {
-  _inherits(Model, _EventEmitter);
-
+var Model = (function () {
   function Model() {
-    var _this = this;
-
     var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
     _classCallCheck(this, Model);
-
-    _get(Object.getPrototypeOf(Model.prototype), 'constructor', this).call(this);
 
     if (typeof options.hashKey === "undefined" || options.hashKey === "") throw new Error("Please provide a hashKey field for the model");
     if (typeof options.table === "undefined" || options.table === "") throw new Error("Please provide a table name that you want to create/use");
@@ -204,9 +187,6 @@ var Model = (function (_EventEmitter) {
     this.table = options.table;
 
     if (options.schema) this.schema = this.defineSchema(options.schema);
-    db.setTable(this.table, this.hashKey, this.rangeKey).then(function () {
-      _this.emit('ready');
-    });
   }
 
   _createClass(Model, [{
@@ -245,14 +225,14 @@ var Model = (function (_EventEmitter) {
 
         (function () {
           // Get property from an object and set to new object
-          var getProperty = function getProperty(_x8, _x9, _x10) {
-            var _again2 = true;
+          var getProperty = function getProperty(_x5, _x6, _x7) {
+            var _again = true;
 
-            _function2: while (_again2) {
-              var newObj = _x8,
-                  obj = _x9,
-                  keys = _x10;
-              _again2 = false;
+            _function: while (_again) {
+              var newObj = _x5,
+                  obj = _x6,
+                  keys = _x7;
+              _again = false;
 
               var key = keys[0];
               if (!obj) return;
@@ -261,12 +241,12 @@ var Model = (function (_EventEmitter) {
               });
               if (!newObj[key]) newObj[key] = {};
               if (keys.length) {
-                _x8 = newObj[key];
-                _x9 = obj[key];
-                _x10 = keys;
-                _again2 = true;
+                _x5 = newObj[key];
+                _x6 = obj[key];
+                _x7 = keys;
+                _again = true;
                 key = undefined;
-                continue _function2;
+                continue _function;
               }
               newObj[key] = obj[key];
             }
@@ -353,24 +333,24 @@ var Model = (function (_EventEmitter) {
   }, {
     key: 'create',
     value: function create(item) {
-      var _this2 = this;
+      var _this = this;
 
       var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
       return new Promise(function (resolve, reject) {
         // validation
-        if (!options.skipValidation && _this2.schema) {
-          _this2.validate(item, _this2.schema)['catch'](reject);
+        if (!options.skipValidation && _this.schema) {
+          _this.validate(item, _this.schema)['catch'](reject);
         }
 
         // encrypt fields that need to be encrypted
-        if (_this2.encryptFields) {
+        if (_this.encryptFields) {
           var _iteratorNormalCompletion3 = true;
           var _didIteratorError3 = false;
           var _iteratorError3 = undefined;
 
           try {
-            for (var _iterator3 = _this2.encryptFields[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            for (var _iterator3 = _this.encryptFields[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
               var i = _step3.value;
 
               if (item[i]) {
@@ -398,11 +378,11 @@ var Model = (function (_EventEmitter) {
         item.createdAt = Date.now();
 
         var params = {
-          TableName: _this2.table,
+          TableName: _this.table,
           Item: item
         };
 
-        db.doc.put(params, function (err, response) {
+        _this.db.doc.put(params, function (err, response) {
           if (err) {
             reject(new Error(err));
           } else {
@@ -414,24 +394,24 @@ var Model = (function (_EventEmitter) {
   }, {
     key: 'update',
     value: function update(keyValues, attributes) {
-      var _this3 = this;
+      var _this2 = this;
 
       var options = arguments.length <= 2 || arguments[2] === undefined ? {} : arguments[2];
 
       return new Promise(function (resolve, reject) {
         // validation
-        if (!options.skipValidation && _this3.schema) {
-          _this3.validate(attributes, _this3.schema)['catch'](reject);
+        if (!options.skipValidation && _this2.schema) {
+          _this2.validate(attributes, _this2.schema)['catch'](reject);
         }
 
         // encrypt fields that need to be encrypted
-        if (_this3.encryptFields) {
+        if (_this2.encryptFields) {
           var _iteratorNormalCompletion4 = true;
           var _didIteratorError4 = false;
           var _iteratorError4 = undefined;
 
           try {
-            for (var _iterator4 = _this3.encryptFields[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+            for (var _iterator4 = _this2.encryptFields[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
               var i = _step4.value;
 
               if (attributes[i]) {
@@ -466,12 +446,12 @@ var Model = (function (_EventEmitter) {
         attributes.updatedAt = { Action: "PUT", Value: Date.now() };
 
         var params = {
-          TableName: _this3.table,
-          Key: _this3._keyObjectForValues(keyValues),
+          TableName: _this2.table,
+          Key: _this2._keyObjectForValues(keyValues),
           AttributeUpdates: attributes
         };
 
-        db.doc.update(params, function (err, response) {
+        _this2.db.doc.update(params, function (err, response) {
           if (err) {
             reject(new Error(err));
           } else {
@@ -483,13 +463,15 @@ var Model = (function (_EventEmitter) {
   }, {
     key: 'destroy',
     value: function destroy(keyValues) {
+      var _this3 = this;
+
       var params = {
         TableName: this.table,
         Key: this._keyObjectForValues(keyValues)
       };
 
       return new Promise(function (resolve, reject) {
-        db.doc['delete'](params, function (err, response) {
+        _this3.db.doc['delete'](params, function (err, response) {
           if (err) {
             reject(new Error(err));
           } else {
@@ -526,6 +508,8 @@ var Model = (function (_EventEmitter) {
   }, {
     key: 'find',
     value: function find(query) {
+      var _this4 = this;
+
       var _attributesAndNamesForQuery2 = this._attributesAndNamesForQuery(query);
 
       var expression = _attributesAndNamesForQuery2.expression;
@@ -542,7 +526,7 @@ var Model = (function (_EventEmitter) {
       };
 
       return new Promise(function (resolve, reject) {
-        db.doc.scan(params, function (err, response) {
+        _this4.db.doc.scan(params, function (err, response) {
           if (err) {
             reject(new Error(err));
           } else {
@@ -558,16 +542,16 @@ var Model = (function (_EventEmitter) {
   }, {
     key: 'query',
     value: function query(indexName, _query) {
-      var _this4 = this;
+      var _this5 = this;
 
-      if (db.isLocal) {
+      if (this.db.isLocal) {
         return this.find(_query);
       }
 
       return new Promise(function (resolve, reject) {
         if (indexName === null) reject(new Error('Must provide an indexName'));
 
-        var _attributesAndNamesForQuery3 = _this4._attributesAndNamesForQuery(_query);
+        var _attributesAndNamesForQuery3 = _this5._attributesAndNamesForQuery(_query);
 
         var expression = _attributesAndNamesForQuery3.expression;
         var attributeNames = _attributesAndNamesForQuery3.attributeNames;
@@ -576,7 +560,7 @@ var Model = (function (_EventEmitter) {
 
         // setup parameters to do query with
         var params = {
-          TableName: _this4.table,
+          TableName: _this5.table,
           IndexName: indexName,
           KeyConditionExpression: expression,
           ExpressionAttributeNames: attributeNames,
@@ -584,7 +568,7 @@ var Model = (function (_EventEmitter) {
         };
 
         // perform the query
-        db.doc.query(params, function (err, response) {
+        _this5.db.doc.query(params, function (err, response) {
           if (err) {
             reject(new Error(err));
           } else {
@@ -600,13 +584,15 @@ var Model = (function (_EventEmitter) {
   }, {
     key: 'get',
     value: function get(keyValues) {
+      var _this6 = this;
+
       var params = {
         TableName: this.table,
         Key: this._keyObjectForValues(keyValues)
       };
 
       return new Promise(function (resolve, reject) {
-        db.doc.get(params, function (err, response) {
+        _this6.db.doc.get(params, function (err, response) {
           if (err) {
             reject(new Error(err));
           } else if (Object.keys(response).length === 0) {
@@ -620,10 +606,10 @@ var Model = (function (_EventEmitter) {
   }, {
     key: 'validate',
     value: function validate(value) {
-      var _this5 = this;
+      var _this7 = this;
 
       return new Promise(function (resolve, reject) {
-        _joi2['default'].validate(value, _this5.schema, function (err, result) {
+        _joi2['default'].validate(value, _this7.schema, function (err, result) {
           if (err) return reject(err);else resolve(result.value);
         });
       });
@@ -631,14 +617,14 @@ var Model = (function (_EventEmitter) {
   }]);
 
   return Model;
-})(_events2['default']);
+})();
 
 exports.Model = Model;
 
-},{"./db":1,"bcrypt":undefined,"events":undefined,"joi":undefined}],4:[function(require,module,exports){
+},{"./db":1,"bcrypt":undefined,"joi":undefined}],4:[function(require,module,exports){
 module.exports={
   "name": "simple-dyno",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Wrapper around AWS DynamoDB SDK to make things easier",
   "main": "simple-dyno.js",
   "directories": {
@@ -667,9 +653,7 @@ module.exports={
     "chai": "^3.0.0",
     "chai-as-promised": "^5.2.0",
     "co-mocha": "^1.1.2",
-    "dotenv": "^1.2.0",
     "mocha": "^2.2.5",
-    "nock": "^2.7.0",
     "sinon": "^1.15.4"
   }
 }
