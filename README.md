@@ -79,6 +79,7 @@ SimpleDyno.load(User);
 
 ## Todo
 
+* Fix CI by allowing Java to run on Travis
 * Migrations
 * Better docs (explain how AWS works)
 
