@@ -30,14 +30,12 @@ var isLocal = undefined;
 
 exports.isLocal = isLocal;
 
-function config() {
-  var options = arguments.length <= 0 || arguments[0] === undefined ? { accessKeyId: '', secretAccessKey: '', region: 'eu-west-1' } : arguments[0];
-
+function config(options) {
   exports.client = client = new AWS.DynamoDB(options);
   exports.doc = doc = new AWS.DynamoDB.DocumentClient(options);
 }
 
-config();
+config({ region: 'eu-west-1' });
 
 function local() {
   var options = arguments.length <= 0 || arguments[0] === undefined ? { inMemory: true } : arguments[0];
