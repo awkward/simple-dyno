@@ -35,6 +35,8 @@ function config(options) {
   exports.doc = doc = new AWS.DynamoDB.DocumentClient(options);
 }
 
+config();
+
 function local() {
   var options = arguments.length <= 0 || arguments[0] === undefined ? { inMemory: true } : arguments[0];
 
@@ -109,12 +111,6 @@ exports.version = _package.version;
 
 var _db = require('./db');
 
-Object.defineProperty(exports, 'reset', {
-  enumerable: true,
-  get: function get() {
-    return _db.reset;
-  }
-});
 Object.defineProperty(exports, 'config', {
   enumerable: true,
   get: function get() {
@@ -624,7 +620,7 @@ exports.Model = Model;
 },{"./db":1,"bcrypt":undefined,"joi":undefined}],4:[function(require,module,exports){
 module.exports={
   "name": "simple-dyno",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Wrapper around AWS DynamoDB SDK to make things easier",
   "main": "simple-dyno.js",
   "directories": {
