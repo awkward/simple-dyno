@@ -30,7 +30,9 @@ var isLocal = undefined;
 
 exports.isLocal = isLocal;
 
-function config(options) {
+function config() {
+  var options = arguments.length <= 0 || arguments[0] === undefined ? { accessKeyId: '', secretAccessKey: '', region: 'eu-west-1' } : arguments[0];
+
   exports.client = client = new AWS.DynamoDB(options);
   exports.doc = doc = new AWS.DynamoDB.DocumentClient(options);
 }
@@ -44,7 +46,7 @@ function local() {
   var dbDir = null;
   if (!options.inMemory) dbDir = './';
   var localDyno = localDynamo.launch(dbDir, 8000);
-  config({ endpoint: new AWS.Endpoint('http://localhost:8000'), region: "eu-west-1" });
+  config({ endpoint: new AWS.Endpoint('http://localhost:8000'), region: 'eu-west-1' });
   return localDyno;
 }
 
@@ -620,7 +622,7 @@ exports.Model = Model;
 },{"./db":1,"bcrypt":undefined,"joi":undefined}],4:[function(require,module,exports){
 module.exports={
   "name": "simple-dyno",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Wrapper around AWS DynamoDB SDK to make things easier",
   "main": "simple-dyno.js",
   "directories": {

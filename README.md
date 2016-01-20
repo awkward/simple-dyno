@@ -18,17 +18,41 @@ $ npm install simple-dyno
 * Local DynamoDB for testing purposes
 
 ## Methods
+To create a new entry, and options can include `{skipValidation: true}`:
 
-* `Model.create(attributes, options)` to create a new entry, and options can include `{skipValidation: true}`
-* `Model.get(keyValues)` to get an entry or multiple entries
-* `Model.update(keyValues, attributes, options)` to update an entry, and options can include `{skipValidation: true}`
-* `Model.destroy(keyValues)` to delete an entry
-* `Model.find(attributes)` to perform a scan operation (not recommended)
-* `Model.query(indexName, attributes)` to query using a secondary index
-* `Model.serialize(response, options)` to serialize the response attributes
+    Model.create(attributes, options)
 
-* `SimpleDyno.local(options)` to run a local DynamoDB (which runs on Java), by default runs in memory but you can also store on disk using `{inMemory: false}` as options.
-* `SimpleDyno.config(options)` which you can pass the following options `{accessKeyId: ', secretAccessKey: ', region: '}`
+To get an entry or multiple entries:
+
+    Model.get(keyValues)
+
+To update an entry, and options can include `{skipValidation: true}`:
+
+    Model.update(keyValues, attributes, options)
+
+To delete an entry:
+
+    Model.destroy(keyValues)
+
+To perform a scan operation (not recommended):
+
+    Model.find(attributes)
+
+To query using a secondary index:
+
+    Model.query(indexName, attributes)
+
+To serialize the response attributes:
+
+    Model.serialize(response, options)
+
+To run a local DynamoDB (which runs on Java), by default runs in memory but you can also store on disk using `{inMemory: false}` as options:
+
+    SimpleDyno.local(options)
+
+To set the config, which you can pass the following options `{accessKeyId: '', secretAccessKey: '', region: ''}`:
+
+    SimpleDyno.config(options)
 
 ## Example (in this case the config is set by default by AWS and assumes tables are already created)
 ```javascript
