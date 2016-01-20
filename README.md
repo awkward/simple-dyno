@@ -81,3 +81,17 @@ SimpleDyno.load(User);
 
 * Migrations
 * Better docs (explain how AWS works)
+
+## How to contribute
+
+Please create a pull request, make sure to include and update the tests and that they're working. And don't forget to build the minified version (with babel) with `make simple-dyno.js`.
+
+## Running tests
+
+Use `make test` to do a test run using Mocha.
+
+## Legal stuff (MIT License)
+
+Copyright (c) 2016 Awkward.
+
+Distributed under MIT license.
