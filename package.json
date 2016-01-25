@@ -1,6 +1,6 @@
 {
   "name": "simple-dyno",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Wrapper around AWS DynamoDB SDK to make things easier",
   "main": "simple-dyno.js",
   "directories": {
@@ -16,13 +16,12 @@
   "author": "David van Leeuwen",
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.2.10",
-    "babel": "^5.8.23",
     "bcrypt": "^0.8.5",
-    "joi": "^6.9.1",
-    "local-dynamo": "^0.1.1"
+    "joi": "^6.9.1"
   },
   "devDependencies": {
+    "local-dynamo": "^0.1.1",
+    "aws-sdk": "^2.2.10",
     "babel": "^5.8.34",
     "babelify": "^6.4.0",
     "browserify": "^11.1.0",
