@@ -10,15 +10,13 @@ exports.load = load;
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj['default'] = obj; return newObj; } }
 
-var _localDynamo = require('local-dynamo');
-
-var localDynamo = _interopRequireWildcard(_localDynamo);
-
 var _awsSdk = require('aws-sdk');
 
 var AWS = _interopRequireWildcard(_awsSdk);
 
 var _child_process = require('child_process');
+
+var localDynamo;
 
 // http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/DynamoDB/DocumentClient.html
 
@@ -35,11 +33,12 @@ function config(options) {
   exports.doc = doc = new AWS.DynamoDB.DocumentClient(options);
 }
 
-config({ region: 'eu-west-1' });
+config({ accessKeyId: '', secretAccessKey: '', region: 'eu-west-1' });
 
 function local() {
   var options = arguments.length <= 0 || arguments[0] === undefined ? { inMemory: true } : arguments[0];
 
+  localDyno = require('local-dynamo');
   exports.isLocal = isLocal = true;
   var dbDir = null;
   if (!options.inMemory) dbDir = './';
@@ -620,7 +619,7 @@ exports.Model = Model;
 },{"./db":1,"bcrypt":undefined,"joi":undefined}],4:[function(require,module,exports){
 module.exports={
   "name": "simple-dyno",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "description": "Wrapper around AWS DynamoDB SDK to make things easier",
   "main": "simple-dyno.js",
   "directories": {
@@ -636,13 +635,11 @@ module.exports={
   "author": "David van Leeuwen",
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.2.10",
-    "babel": "^5.8.23",
     "bcrypt": "^0.8.5",
-    "joi": "^6.9.1",
-    "local-dynamo": "^0.1.1"
+    "joi": "^6.9.1"
   },
   "devDependencies": {
+    "aws-sdk": "^2.2.10",
     "babel": "^5.8.34",
     "babelify": "^6.4.0",
     "browserify": "^11.1.0",
