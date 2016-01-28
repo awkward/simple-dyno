@@ -38,7 +38,7 @@ config({ accessKeyId: '', secretAccessKey: '', region: 'eu-west-1' });
 function local() {
   var options = arguments.length <= 0 || arguments[0] === undefined ? { inMemory: true } : arguments[0];
 
-  localDyno = require('local-dynamo');
+  localDynamo = require('local-dynamo');
   exports.isLocal = isLocal = true;
   var dbDir = null;
   if (!options.inMemory) dbDir = './';
@@ -619,7 +619,7 @@ exports.Model = Model;
 },{"./db":1,"bcrypt":undefined,"joi":undefined}],4:[function(require,module,exports){
 module.exports={
   "name": "simple-dyno",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Wrapper around AWS DynamoDB SDK to make things easier",
   "main": "simple-dyno.js",
   "directories": {
@@ -646,6 +646,7 @@ module.exports={
     "chai": "^3.0.0",
     "chai-as-promised": "^5.2.0",
     "co-mocha": "^1.1.2",
+    "local-dynamo": "^0.1.2",
     "mocha": "^2.2.5",
     "sinon": "^1.15.4"
   }
