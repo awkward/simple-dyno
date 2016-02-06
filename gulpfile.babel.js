@@ -13,7 +13,7 @@ const paths = {
   scripts: ['src/**/*.js']
 };
 
-gulp.task('scripts', ['clean'], function() {
+gulp.task('build', ['clean'], function() {
   return gulp.src(paths.scripts)
     .pipe(babel({
       presets: ['es2015', 'stage-0']
@@ -26,7 +26,7 @@ gulp.task('clean', function() {
 })
 
 gulp.task('watch', function() {
-  gulp.watch(paths.scripts, ['scripts'])
+  gulp.watch(paths.scripts, ['build'])
 })
 
-gulp.task('default', ['watch', 'scripts'])
+gulp.task('default', ['watch', 'build'])
