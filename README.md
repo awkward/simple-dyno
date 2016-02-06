@@ -6,8 +6,10 @@ Easy to use, minimalistic wrapper for [AWS DynamoDB](https://aws.amazon.com/dyna
 
 ## Installation
 ```bash
-$ npm install simple-dyno
+$ npm install @awkward/simple-dyno
 ```
+
+Please also include `require('babel-polyfill')` in your project for node <= 4.0
 
 ## Features
 
@@ -109,11 +111,11 @@ SimpleDyno.load(User);
 
 ## How to contribute
 
-Please create a pull request, make sure to include and update the tests and that they're working. And don't forget to build the minified version (with babel) with `make simple-dyno.js`.
+Please create a pull request, make sure to include and update the tests and that they're working. And don't forget to build the minified version (with babel) with `npm run build`.
 
 ## Running tests
 
-Use `make test` to do a test run using Mocha.
+Use `npm test` to do a test run using Mocha.
 
 ## Legal stuff (MIT License)
 

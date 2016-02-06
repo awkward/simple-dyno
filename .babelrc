@@ -1,0 +1,5 @@
+// This file is intented for gulpfile.babel.js
+
+{
+ "presets": ["es2015"]
+}

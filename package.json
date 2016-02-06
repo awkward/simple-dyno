@@ -1,8 +1,8 @@
 {
-  "name": "simple-dyno",
-  "version": "0.1.1",
+  "name": "@awkward/simple-dyno",
+  "version": "0.1.2",
   "description": "Wrapper around AWS DynamoDB SDK to make things easier",
-  "main": "simple-dyno.js",
+  "main": "lib/index.js",
   "directories": {
     "test": "test"
   },
@@ -11,7 +11,9 @@
     "url": "git+https://github.com/awkward/simple-dyno.git"
   },
   "scripts": {
-    "test": "make test"
+    "test": "./node_modules/.bin/mocha test/unit",
+    "build": "./node_modules/.bin/gulp scripts",
+    "watch": "./node_modules/.bin/gulp default"
   },
   "author": "David van Leeuwen",
   "license": "MIT",
@@ -21,14 +23,23 @@
   },
   "devDependencies": {
     "aws-sdk": "^2.2.10",
-    "babel": "^5.8.34",
-    "babelify": "^6.4.0",
-    "browserify": "^11.1.0",
+    "babel-core": "^6.4.5",
+    "babel-polyfill": "^6.3.14",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-preset-stage-0": "^6.3.13",
+    "browserify": "^13.0.0",
     "chai": "^3.0.0",
     "chai-as-promised": "^5.2.0",
     "co-mocha": "^1.1.2",
+    "del": "^2.2.0",
+    "gulp": "^3.9.0",
+    "gulp-babel": "^6.1.2",
+    "gulp-replace": "^0.5.4",
+    "gulp-uglify": "^1.5.1",
     "local-dynamo": "^0.1.2",
     "mocha": "^2.2.5",
-    "sinon": "^1.15.4"
+    "sinon": "^1.15.4",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
   }
 }
