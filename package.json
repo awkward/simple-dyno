@@ -1,6 +1,6 @@
 {
   "name": "@awkward/simple-dyno",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Wrapper around AWS DynamoDB SDK to make things easier",
   "main": "lib/index.js",
   "directories": {
