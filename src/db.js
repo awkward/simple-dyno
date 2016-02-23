@@ -14,7 +14,8 @@ export function config(options) {
   doc = new AWS.DynamoDB.DocumentClient(options);
 }
 
-config({accessKeyId: '', secretAccessKey: '', region: 'eu-west-1'});
+let awsRegion = process.env.AWS_REGION || 'eu-west-1';
+config({accessKeyId: '', secretAccessKey: '', region: awsRegion});
 
 export function local(options = {inMemory: true}) {
   localDynamo = require('local-dynamo');
