@@ -1,6 +1,6 @@
 {
   "name": "@awkward/simple-dyno",
-  "version": "0.1.41",
+  "version": "0.1.42",
   "description": "Wrapper around AWS DynamoDB SDK to make things easier",
   "main": "lib/index.js",
   "directories": {
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha test/unit",
-    "build": "./node_modules/.bin/gulp scripts",
+    "build": "./node_modules/.bin/gulp build",
     "watch": "./node_modules/.bin/gulp default"
   },
   "author": "David van Leeuwen",
