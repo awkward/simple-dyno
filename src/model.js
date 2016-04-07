@@ -119,6 +119,29 @@ export class Model {
     });
   }
 
+  unset(keyValues, key, options = {}) {
+    return new Promise( (resolve, reject) => {
+      let attributes = {};
+
+      attributes[key] = {Action: "DELETE"};
+      attributes.updatedAt = {Action: "PUT", Value: Date.now()};
+
+      let params = {
+        TableName: this.table,
+        Key: this._keyObjectForValues(keyValues),
+        AttributeUpdates: attributes
+      };
+
+      this.db.doc.update(params, function(err, response) {
+        if(err) {
+          reject(new Error(err));
+        } else {
+          resolve(response);
+        }
+      });
+    });
+  }
+
   update(keyValues, attributes, options = {}) {
     return new Promise( (resolve, reject) => {
       // validation
@@ -179,7 +202,7 @@ export class Model {
     });
   }
 
-  _attributesAndNamesForQuery(query) {
+  _attributesAndNamesForQuery(query, operators) {
     let attributes = {},
         attributeNames = {},
         expression = "",
@@ -191,10 +214,13 @@ export class Model {
       let attrName = `#${key}`;
       attributeNames[attrName] = key;
 
+      let operator = '=';
+      if(operators && operators[key]) operator = operators[key];
+
       if(expression === "") {
         expression = `${attrName} = :v_${key}`;
       } else {
-        expression += ` AND ${attrName} = :v_${key}`;
+        expression += ` AND ${attrName} ${operator} :v_${key}`;
       }
 
       attributes[`:v_${key}`] = query[key]
@@ -229,7 +255,7 @@ export class Model {
     });
   }
 
-  query(indexName, query) {
+  query(indexName, query, operators) {
     if(this.db.isLocal) {
       return this.find(query);
     }
@@ -237,7 +263,7 @@ export class Model {
     return new Promise( (resolve, reject) => {
       if (indexName === null) reject(new Error('Must provide an indexName'));
 
-      let {expression, attributeNames, attributes, keyAttr} = this._attributesAndNamesForQuery(query);
+      let {expression, attributeNames, attributes, keyAttr} = this._attributesAndNamesForQuery(query, operators);
 
       // setup parameters to do query with
       let params = {
