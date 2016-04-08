@@ -229,18 +229,27 @@ export class Model {
     return {expression, attributeNames, attributes, keyAttr};
   }
 
-  find(query) {
-    let {expression, attributeNames, attributes, keyAttr} = this._attributesAndNamesForQuery(query);
+  find(indexName, query, options = {}) {
+    let {expression, attributeNames, attributes, keyAttr} = this._attributesAndNamesForQuery(query, options.operators);
+
+    if(options.operators) delete options.operators;
 
     let params = {
       TableName: this.table,
       FilterExpression: expression,
       ExpressionAttributeNames: attributeNames,
       ExpressionAttributeValues: attributes,
-      Select: "ALL_ATTRIBUTES"
+      Select: "ALL_ATTRIBUTES",
+      ...options
     };
 
+    if(!this.db.isLocal) {
+      params.IndexName = indexName;
+    }
+
     return new Promise( (resolve, reject) => {
+      if (indexName === null) return reject(new Error('Must provide an indexName'));
+
       this.db.doc.scan(params, (err, response) => {
         if(err) {
           reject(new Error(err));
@@ -255,15 +264,17 @@ export class Model {
     });
   }
 
-  query(indexName, query, operators) {
+  query(indexName, query, options = {}) {
     if(this.db.isLocal) {
-      return this.find(query);
+      return this.find(indexName, query);
     }
 
     return new Promise( (resolve, reject) => {
-      if (indexName === null) reject(new Error('Must provide an indexName'));
+      if (indexName === null) return reject(new Error('Must provide an indexName'));
 
-      let {expression, attributeNames, attributes, keyAttr} = this._attributesAndNamesForQuery(query, operators);
+      let {expression, attributeNames, attributes, keyAttr} = this._attributesAndNamesForQuery(query, options.operators);
+
+      if(options.operators) delete options.operators;
 
       // setup parameters to do query with
       let params = {
@@ -271,7 +282,8 @@ export class Model {
         IndexName: indexName,
         KeyConditionExpression: expression,
         ExpressionAttributeNames: attributeNames,
-        ExpressionAttributeValues: attributes
+        ExpressionAttributeValues: attributes,
+        ...options
       };
 
       // perform the query
@@ -289,10 +301,11 @@ export class Model {
     });
   }
 
-  get(keyValues) {
+  get(keyValues, options = {}) {
     let params = {
       TableName: this.table,
-      Key: this._keyObjectForValues(keyValues)
+      Key: this._keyObjectForValues(keyValues),
+      ConsistentRead: options.ConsistentRead || false
     };
 
     return new Promise( (resolve, reject) => {
