@@ -143,45 +143,55 @@ export class Model {
   }
 
   update(keyValues, attributes, options = {}) {
-    return new Promise( (resolve, reject) => {
-      // validation
-      if(!options.skipValidation && this.schema) {
-        this.validate(attributes, this.schema).catch(reject);
-      }
+    let _this = this;
 
-      // encrypt fields that need to be encrypted
-      if(this.encryptFields) {
-        for(let i of this.encryptFields) {
-          if(attributes[i]) {
-            let salt = bcrypt.genSaltSync(10);
-            let hash = bcrypt.hashSync(attributes[i], salt);
-            attributes[i] = hash;
+    return new Promise( (resolve, reject) => {
+      // do the actual updating
+      let doUpdate = function() {
+        // encrypt fields that need to be encrypted
+        if(_this.encryptFields) {
+          for(let i of _this.encryptFields) {
+            if(attributes[i]) {
+              let salt = bcrypt.genSaltSync(10);
+              let hash = bcrypt.hashSync(attributes[i], salt);
+              attributes[i] = hash;
+            }
           }
         }
-      }
 
-      for(let key in attributes) {
-        attributes[key] = {
-          Action: "PUT",
-          Value: attributes[key]
-        };
-      }
-
-      attributes.updatedAt = {Action: "PUT", Value: Date.now()};
-
-      let params = {
-        TableName: this.table,
-        Key: this._keyObjectForValues(keyValues),
-        AttributeUpdates: attributes
-      };
-
-      this.db.doc.update(params, function(err, response) {
-        if(err) {
-          reject(new Error(err));
-        } else {
-          resolve(response);
+        for(let key in attributes) {
+          attributes[key] = {
+            Action: "PUT",
+            Value: attributes[key]
+          };
         }
-      });
+
+        attributes.updatedAt = {Action: "PUT", Value: Date.now()};
+
+        let params = {
+          TableName: _this.table,
+          Key: _this._keyObjectForValues(keyValues),
+          AttributeUpdates: attributes
+        };
+
+        _this.db.doc.update(params, function(err, response) {
+          if(err) {
+            reject(new Error(err));
+          } else {
+            resolve(response);
+          }
+        });
+      }
+
+      // validation
+      if(!options.skipValidation && _this.schema) {
+        _this.validate(attributes, this.schema)
+          .then(doUpdate)
+          .catch(reject);
+      } else {
+        doUpdate();
+      }
+
     });
   }
 
