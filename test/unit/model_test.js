@@ -1,3 +1,4 @@
+require('babel-polyfill');
 import * as chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
@@ -39,7 +40,7 @@ describe('SimpleDyno.Model', function() {
   describe('Instance methods:', function () {
     let model, localDB;
 
-    before(function * () {
+    beforeEach(function * () {
       localDB = SimpleDyno.local();
 
       model = new SimpleDyno.Model({
@@ -62,7 +63,7 @@ describe('SimpleDyno.Model', function() {
       yield SimpleDyno.load(model);
     });
 
-    after(function () {
+    afterEach(function () {
       execSync(`kill -9 ${localDB.pid}`);
     });
 
@@ -77,12 +78,29 @@ describe('SimpleDyno.Model', function() {
     });
 
     describe('#create()', function () {
-      it('should reject when passing invalid parameters', function () {
-        return expect(model.create({email: "test"})).to.be.rejected;
+      it('should fail when passing invalid parameters', function* () {
+        // assert that the transaction failed
+        expect(model.query(null, {email: "test"})).to.be.rejected;
+
+        // asert that no records were inserted
+        let record;
+        try{
+          record = yield model.query('bogus-index', {email: "test"})
+        } catch (e) { }
+
+        expect(record).to.be.undefined;
       });
 
-      it('should accept invalid parameters when skipping validation', function () {
-        return expect(model.create({email: "test"}, {skipValidation: true})).to.be.fulfilled;
+      it('should accept invalid parameters when skipping validation', function *() {
+        expect(model.create({email: "test"}, {skipValidation: true})).to.be.fulfilled;
+        // assert that the value is actually inserted into the db
+        // asert that no records were inserted
+        let record;
+        try{
+          record = yield model.query('bogus-index', {email: "test"})
+        } catch (e) { }
+
+        expect(record).to.not.be.undefined;
       });
 
       it('should encrypt fields that need to be encrypted', function *() {
@@ -198,6 +216,7 @@ describe('SimpleDyno.Model', function() {
         });
       });
     });
+
   });
 
 });

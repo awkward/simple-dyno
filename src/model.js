@@ -86,36 +86,47 @@ export class Model {
 
   create(item, options = {}) {
     return new Promise( (resolve, reject) => {
-      // validation
-      if(!options.skipValidation && this.schema) {
-        this.validate(item, this.schema).catch(reject);
-      }
 
-      // encrypt fields that need to be encrypted
-      if(this.encryptFields) {
-        for(let i of this.encryptFields) {
-          if(item[i]) {
-            let salt = bcrypt.genSaltSync(10);
-            let hash = bcrypt.hashSync(item[i], salt);
-            item[i] = hash;
+      // actual create logic
+      let doCreate = () => {
+        // encrypt fields that need to be encrypted
+        if(this.encryptFields) {
+          for(let i of this.encryptFields) {
+            if(item[i]) {
+              let salt = bcrypt.genSaltSync(10);
+              let hash = bcrypt.hashSync(item[i], salt);
+              item[i] = hash;
+            }
           }
         }
-      }
 
-      item.createdAt = Date.now();
+        // add extra fields
+        item.createdAt = Date.now();
 
-      let params = {
-        TableName: this.table,
-        Item: item
+        // setup DynamoDB Parameters
+        let params = {
+          TableName: this.table,
+          Item: item
+        };
+
+        // insert the document into Dynamo
+        this.db.doc.put(params, function(err, response) {
+          if(err) {
+            reject(new Error(err));
+          } else {
+            resolve(item);
+          }
+        });
+
       };
 
-      this.db.doc.put(params, function(err, response) {
-        if(err) {
-          reject(new Error(err));
-        } else {
-          resolve(item);
-        }
-      });
+      // Schema validation
+      if(!options.skipValidation && this.schema) {
+        this.validate(item, this.schema).then(doCreate.bind(this)).catch(reject);
+      } else {
+        doCreate.call(this);
+      }
+
     });
   }
 
