@@ -147,6 +147,16 @@ describe('SimpleDyno.Model', function() {
         return expect(model.update("blabla", {email: "t3st@test.com"})).to.be.rejected;
       });
 
+      it('should fail when passing invalid parameters', function* (){
+        let record = yield model.create({email: "test@test.com"})
+        expect(model.update("test@test.com", {email: "a"})).to.be.rejected
+
+        // assert model is unchanged
+        let result = yield model.get("test@test.com")
+        expect(result).to.not.be.undefined;
+        expect(result).to.eql(record);
+      });
+
       it('should accept invalid parameters when skipping validation', function () {
         return expect(model.update("test", {password: "a"}, {skipValidation: true})).to.be.fulfilled;
       });
@@ -166,8 +176,15 @@ describe('SimpleDyno.Model', function() {
     });
 
     describe('#destroy()', function() {
-      it('should throw an error when it doesn\'t find a result', function *() {
-        return expect(model.find({email: "testtest@test.com"})).to.be.rejected;
+      it('should remove the record from the database', function *() {
+        let record = yield model.create({email: "test@test.com"})
+        model.destroy(record.email)
+        expect(model.find({email: record.email})).to.be.rejected
+      });
+
+      it('should throw when record could not be found', function* () {
+        let record = yield model.create({email: "test@test.com"})
+        expect(model.destroy("bogus@email.org")).to.be.rejected
       });
 
       it('should call doc.delete', function *() {

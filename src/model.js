@@ -158,7 +158,7 @@ export class Model {
 
     return new Promise( (resolve, reject) => {
       // do the actual updating
-      let doUpdate = function() {
+      let doUpdate = () => {
         // encrypt fields that need to be encrypted
         if(_this.encryptFields) {
           for(let i of _this.encryptFields) {
