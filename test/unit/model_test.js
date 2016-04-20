@@ -201,8 +201,12 @@ describe('SimpleDyno.Model', function() {
       });
 
       it('should call doc.scan', function *() {
+        // create a record to find
+        yield model.create({email: "test@test.com"});
+
+        // assert the internal scan function is called
         let spy = sinon.spy(db.doc, "scan");
-        yield model.find({email: "test@test.com"});
+        yield model.find('bogus-index', {email: "test@test.com"});
         expect(spy.called).to.be.true;
         spy.restore();
       });
