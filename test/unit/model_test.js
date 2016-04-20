@@ -80,15 +80,10 @@ describe('SimpleDyno.Model', function() {
     describe('#create()', function () {
       it('should fail when passing invalid parameters', function* () {
         // assert that the transaction failed
-        expect(model.query(null, {email: "test"})).to.be.rejected;
+        expect(model.create({email: "test"})).to.be.rejected;
 
         // asert that no records were inserted
-        let record;
-        try{
-          record = yield model.query('bogus-index', {email: "test"})
-        } catch (e) { }
-
-        expect(record).to.be.undefined;
+        expect(model.query('bogus-index', {email: "test"})).to.be.rejected
       });
 
       it('should accept invalid parameters when skipping validation', function *() {
@@ -117,6 +112,11 @@ describe('SimpleDyno.Model', function() {
     });
 
     describe('#get()', function() {
+      let user;
+      beforeEach(function * (){
+        user = yield model.create({email: "test@test.com"});
+      });
+
       it('should call doc.get', function * () {
         let spy = sinon.spy(db.doc, "get");
         yield model.get("test@test.com");
