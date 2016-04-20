@@ -1,3 +1,4 @@
+require('babel-polyfill');
 import * as chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
@@ -39,21 +40,20 @@ describe('SimpleDyno.Model', function() {
   describe('Instance methods:', function () {
     let model, localDB;
 
-    before(function * () {
+    beforeEach(function * () {
       localDB = SimpleDyno.local();
-
-      model = new SimpleDyno.Model({
-        table: "users",
-        hashKey: "email",
+      model   = new SimpleDyno.Model({
+        table:    "users",
+        hashKey:  "email",
         serializers: {
-          default: ['email'],
-          scary: ['access_token', 'password']
+          default:  ['email'],
+          scary:    ['access_token', 'password']
         },
         schema: {
-          email: Joi.string().email(),
+          email:        Joi.string().email(),
           access_token: Joi.string(),
           password: {
-            format: Joi.string().regex(/[a-zA-Z0-9]{3,30}/),
+            format:  Joi.string().regex(/[a-zA-Z0-9]{3,30}/),
             encrypt: true
           }
         }
@@ -62,7 +62,7 @@ describe('SimpleDyno.Model', function() {
       yield SimpleDyno.load(model);
     });
 
-    after(function () {
+    afterEach(function () {
       execSync(`kill -9 ${localDB.pid}`);
     });
 
@@ -77,12 +77,17 @@ describe('SimpleDyno.Model', function() {
     });
 
     describe('#create()', function () {
-      it('should reject when passing invalid parameters', function () {
-        return expect(model.create({email: "test"})).to.be.rejected;
+      it('should fail when passing invalid parameters', function* () {
+        // assert that the transaction failed
+        expect(model.create({email: "test"})).to.be.rejected;
+
+        // asert that no records were inserted
+        expect(model.query('bogus-index', {email: "test"})).to.be.rejected
       });
 
-      it('should accept invalid parameters when skipping validation', function () {
-        return expect(model.create({email: "test"}, {skipValidation: true})).to.be.fulfilled;
+      it('should accept invalid parameters when skipping validation', function *() {
+        expect(model.create({email: "test"}, {skipValidation: true})).to.be.fulfilled;
+        expect(model.query('bogus-index', {email: "test"})).to.be.fulfilled
       });
 
       it('should encrypt fields that need to be encrypted', function *() {
@@ -99,6 +104,10 @@ describe('SimpleDyno.Model', function() {
     });
 
     describe('#get()', function() {
+      beforeEach(function * (){
+        yield model.create({email: "test@test.com"});
+      });
+
       it('should call doc.get', function * () {
         let spy = sinon.spy(db.doc, "get");
         yield model.get("test@test.com");
@@ -117,6 +126,10 @@ describe('SimpleDyno.Model', function() {
     });
 
     describe('#serialize()', function() {
+      beforeEach(function* () {
+        yield model.create({email: "test@test.com"})
+      });
+
       it('should only return an email', function *() {
         let response = yield model.get("test@test.com");
         expect(model.serialize(response)).to.be.eql({email: "test@test.com"});
@@ -132,6 +145,16 @@ describe('SimpleDyno.Model', function() {
     describe('#update()', function() {
       it('should reject when item does\'nt exist', function () {
         return expect(model.update("blabla", {email: "t3st@test.com"})).to.be.rejected;
+      });
+
+      it('should fail when passing invalid parameters', function* (){
+        let record = yield model.create({email: "test@test.com"})
+        expect(model.update("test@test.com", {email: "a"})).to.be.rejected
+
+        // assert model is unchanged
+        let result = yield model.get("test@test.com")
+        expect(result).to.not.be.undefined;
+        expect(result).to.eql(record);
       });
 
       it('should accept invalid parameters when skipping validation', function () {
@@ -153,8 +176,15 @@ describe('SimpleDyno.Model', function() {
     });
 
     describe('#destroy()', function() {
-      it('should throw an error when it doesn\'t find a result', function *() {
-        return expect(model.find({email: "testtest@test.com"})).to.be.rejected;
+      it('should remove the record from the database', function *() {
+        let record = yield model.create({email: "test@test.com"})
+        model.destroy(record.email)
+        expect(model.find({email: record.email})).to.be.rejected
+      });
+
+      it('should throw when record could not be found', function* () {
+        let record = yield model.create({email: "test@test.com"})
+        expect(model.destroy("bogus@email.org")).to.be.rejected
       });
 
       it('should call doc.delete', function *() {
@@ -171,8 +201,12 @@ describe('SimpleDyno.Model', function() {
       });
 
       it('should call doc.scan', function *() {
+        // create a record to find
+        yield model.create({email: "test@test.com"});
+
+        // assert the internal scan function is called
         let spy = sinon.spy(db.doc, "scan");
-        yield model.find({email: "test@test.com"});
+        yield model.find('bogus-index', {email: "test@test.com"});
         expect(spy.called).to.be.true;
         spy.restore();
       });
@@ -180,6 +214,7 @@ describe('SimpleDyno.Model', function() {
 
     describe('#query()', function() {
       it('should call find when running locally', function *() {
+        yield model.create({email: "test@test.com"})
         let spy = sinon.spy(model, "find");
         yield model.query("email", {email: "test@test.com"});
         expect(spy.called).to.be.true;
@@ -198,6 +233,7 @@ describe('SimpleDyno.Model', function() {
         });
       });
     });
+
   });
 
 });
