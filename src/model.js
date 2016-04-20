@@ -154,14 +154,12 @@ export class Model {
   }
 
   update(keyValues, attributes, options = {}) {
-    let _this = this;
-
     return new Promise( (resolve, reject) => {
       // do the actual updating
       let doUpdate = () => {
         // encrypt fields that need to be encrypted
-        if(_this.encryptFields) {
-          for(let i of _this.encryptFields) {
+        if(this.encryptFields) {
+          for(let i of this.encryptFields) {
             if(attributes[i]) {
               let salt = bcrypt.genSaltSync(10);
               let hash = bcrypt.hashSync(attributes[i], salt);
@@ -180,12 +178,12 @@ export class Model {
         attributes.updatedAt = {Action: "PUT", Value: Date.now()};
 
         let params = {
-          TableName: _this.table,
-          Key: _this._keyObjectForValues(keyValues),
+          TableName: this.table,
+          Key: this._keyObjectForValues(keyValues),
           AttributeUpdates: attributes
         };
 
-        _this.db.doc.update(params, function(err, response) {
+        this.db.doc.update(params, function(err, response) {
           if(err) {
             reject(new Error(err));
           } else {
@@ -195,12 +193,12 @@ export class Model {
       }
 
       // validation
-      if(!options.skipValidation && _this.schema) {
-        _this.validate(attributes, this.schema)
-          .then(doUpdate)
+      if(!options.skipValidation && this.schema) {
+        this.validate(attributes, this.schema)
+          .then(doUpdate.bind(this))
           .catch(reject);
       } else {
-        doUpdate();
+        doUpdate.call(this);
       }
 
     });
