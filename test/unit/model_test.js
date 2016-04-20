@@ -214,6 +214,7 @@ describe('SimpleDyno.Model', function() {
 
     describe('#query()', function() {
       it('should call find when running locally', function *() {
+        yield model.create({email: "test@test.com"})
         let spy = sinon.spy(model, "find");
         yield model.query("email", {email: "test@test.com"});
         expect(spy.called).to.be.true;
