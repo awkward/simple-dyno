@@ -42,19 +42,18 @@ describe('SimpleDyno.Model', function() {
 
     beforeEach(function * () {
       localDB = SimpleDyno.local();
-
-      model = new SimpleDyno.Model({
-        table: "users",
-        hashKey: "email",
+      model   = new SimpleDyno.Model({
+        table:    "users",
+        hashKey:  "email",
         serializers: {
-          default: ['email'],
-          scary: ['access_token', 'password']
+          default:  ['email'],
+          scary:    ['access_token', 'password']
         },
         schema: {
-          email: Joi.string().email(),
+          email:        Joi.string().email(),
           access_token: Joi.string(),
           password: {
-            format: Joi.string().regex(/[a-zA-Z0-9]{3,30}/),
+            format:  Joi.string().regex(/[a-zA-Z0-9]{3,30}/),
             encrypt: true
           }
         }
@@ -88,14 +87,7 @@ describe('SimpleDyno.Model', function() {
 
       it('should accept invalid parameters when skipping validation', function *() {
         expect(model.create({email: "test"}, {skipValidation: true})).to.be.fulfilled;
-        // assert that the value is actually inserted into the db
-        // asert that no records were inserted
-        let record;
-        try{
-          record = yield model.query('bogus-index', {email: "test"})
-        } catch (e) { }
-
-        expect(record).to.not.be.undefined;
+        expect(model.query('bogus-index', {email: "test"})).to.be.fulfilled
       });
 
       it('should encrypt fields that need to be encrypted', function *() {
@@ -112,9 +104,8 @@ describe('SimpleDyno.Model', function() {
     });
 
     describe('#get()', function() {
-      let user;
       beforeEach(function * (){
-        user = yield model.create({email: "test@test.com"});
+        yield model.create({email: "test@test.com"});
       });
 
       it('should call doc.get', function * () {
@@ -135,6 +126,10 @@ describe('SimpleDyno.Model', function() {
     });
 
     describe('#serialize()', function() {
+      beforeEach(function* () {
+        yield model.create({email: "test@test.com"})
+      });
+
       it('should only return an email', function *() {
         let response = yield model.get("test@test.com");
         expect(model.serialize(response)).to.be.eql({email: "test@test.com"});
