@@ -11,7 +11,7 @@ export let doc;
 export let isLocal;
 
 export function config(options) {
-  if(isLocal && !options.ignoreOverideHttpOptions) {
+  if(!isLocal) {
     options.httpOptions = {
       agent: new https.Agent({
         rejectUnauthorized: true,
@@ -33,7 +33,7 @@ export function local(options = {inMemory: true}) {
   let dbDir = null;
   if(!options.inMemory) dbDir = './';
   let localDyno = localDynamo.launch(dbDir, 8000);
-  config({accessKeyId: 'akid', secretAccessKey: 'secret', endpoint: new AWS.Endpoint('http://localhost:8000'), region: 'eu-west-1', ignoreOverideHttpOptions: true})
+  config({accessKeyId: 'akid', secretAccessKey: 'secret', endpoint: new AWS.Endpoint('http://localhost:8000'), region: 'eu-west-1'})
   return localDyno;
 }
 
