@@ -1,5 +1,6 @@
 import * as AWS from 'aws-sdk';
 import { execSync } from 'child_process';
+import https from 'https'
 
 var localDynamo;
 
@@ -10,8 +11,17 @@ export let doc;
 export let isLocal;
 
 export function config(options) {
+  if(!isLocal) {
+    options.httpOptions = {
+      agent: new https.Agent({
+        rejectUnauthorized: true,
+        keepAlive: true,
+        secureProtocol: 'TLSv1_method'
+      })
+    }
+  }
   client = new AWS.DynamoDB(options);
-  doc = new AWS.DynamoDB.DocumentClient(options);
+  doc = new AWS.DynamoDB.DocumentClient({...options, service: client});
 }
 
 let awsRegion = process.env.AWS_REGION || 'eu-west-1';
