@@ -11,14 +11,15 @@ export let doc;
 export let isLocal;
 
 export function config(options) {
-  options.httpOptions = {
-    agent: new https.Agent({
-      rejectUnauthorized: true,
-      keepAlive: true,
-      secureProtocol: 'TLSv1_method'
-    })
+  if(isLocal && !options.ignoreOverideHttpOptions) {
+    options.httpOptions = {
+      agent: new https.Agent({
+        rejectUnauthorized: true,
+        keepAlive: true,
+        secureProtocol: 'TLSv1_method'
+      })
+    }
   }
-
   client = new AWS.DynamoDB(options);
   doc = new AWS.DynamoDB.DocumentClient({...options, service: client});
 }
@@ -32,7 +33,7 @@ export function local(options = {inMemory: true}) {
   let dbDir = null;
   if(!options.inMemory) dbDir = './';
   let localDyno = localDynamo.launch(dbDir, 8000);
-  config({accessKeyId: 'akid', secretAccessKey: 'secret', endpoint: new AWS.Endpoint('http://localhost:8000'), region: 'eu-west-1'})
+  config({accessKeyId: 'akid', secretAccessKey: 'secret', endpoint: new AWS.Endpoint('http://localhost:8000'), region: 'eu-west-1', ignoreOverideHttpOptions: true})
   return localDyno;
 }
 
