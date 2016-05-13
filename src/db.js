@@ -15,7 +15,8 @@ export function config(options) {
     options.httpOptions = {
       agent: new https.Agent({
         rejectUnauthorized: true,
-        keepAlive: true,
+        // keepAlive: true,
+        ciphers: 'ALL',
         secureProtocol: 'TLSv1_method'
       })
     }
