@@ -43,11 +43,11 @@ export class Model {
       // Get property from an object and set to new object
       let getProperty = function(newObj, obj, keys) {
         let key = keys[0];
-        if(!obj) return;
+        if(obj === undefined || obj[key] === undefined) return;
         keys = keys.filter(item => item !== key);
         if(!newObj[key]) newObj[key] = {};
         if(keys.length) return getProperty(newObj[key], obj[key], keys);
-        if(obj[key] !== undefined) newObj[key] = obj[key];
+        newObj[key] = obj[key];
       }
 
       // Recursively get all properties (using a dot notation too, e.g.: profile.firstname)
