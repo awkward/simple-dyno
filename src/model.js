@@ -47,7 +47,7 @@ export class Model {
         keys = keys.filter(item => item !== key);
         if(!newObj[key]) newObj[key] = {};
         if(keys.length) return getProperty(newObj[key], obj[key], keys);
-        if(obj[key] !== 'undefined') newObj[key] = obj[key];
+        if(obj[key] !== undefined) newObj[key] = obj[key];
       }
 
       // Recursively get all properties (using a dot notation too, e.g.: profile.firstname)
@@ -57,7 +57,7 @@ export class Model {
       }
     } else {
       for(let key in object) {
-        if(object[key] !== 'undefined') newObject[key] = object[key];
+        if(object[key] !== undefined) newObject[key] = object[key];
       }
     }
 
