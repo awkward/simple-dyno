@@ -1,6 +1,6 @@
 import Joi from 'joi';
 import * as db from './db';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 export class Model {
   constructor(options = {}) {
